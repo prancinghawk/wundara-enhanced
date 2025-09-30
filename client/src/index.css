@@ -1,0 +1,125 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --font-sans: 'Roboto', sans-serif;
+    --font-display: 'Roboto Flex', sans-serif;
+  }
+
+  body {
+    @apply bg-surface text-on-surface font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display font-medium;
+  }
+}
+
+@layer components {
+  /* Material Me Typography */
+  .text-display-large { @apply text-[57px] leading-[64px] font-normal; }
+  .text-display-medium { @apply text-[45px] leading-[52px] font-normal; }
+  .text-display-small { @apply text-[36px] leading-[44px] font-normal; }
+  .text-headline-large { @apply text-[32px] leading-[40px] font-normal; }
+  .text-headline-medium { @apply text-[28px] leading-[36px] font-normal; }
+  .text-headline-small { @apply text-[24px] leading-[32px] font-normal; }
+  .text-title-large { @apply text-[22px] leading-[28px] font-medium; }
+  .text-title-medium { @apply text-[16px] leading-[24px] font-medium; }
+  .text-title-small { @apply text-[14px] leading-[20px] font-medium; }
+  .text-label-large { @apply text-[14px] leading-[20px] font-medium; }
+  .text-label-medium { @apply text-[12px] leading-[16px] font-medium; }
+  .text-label-small { @apply text-[11px] leading-[16px] font-medium; }
+  .text-body-large { @apply text-[16px] leading-[24px] font-normal; }
+  .text-body-medium { @apply text-[14px] leading-[20px] font-normal; }
+  .text-body-small { @apply text-[12px] leading-[16px] font-normal; }
+
+  /* Material Me Button Styles */
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-full px-6 py-2.5 text-label-large font-medium transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  .btn.filled {
+    @apply bg-black text-white hover:bg-gray-800 hover:shadow-md focus:ring-black focus:ring-opacity-20;
+  }
+  .btn.tonal {
+    @apply bg-secondary-container text-on-secondary-container hover:shadow-sm focus:ring-secondary focus:ring-opacity-20;
+  }
+  .btn.outlined {
+    @apply border border-outline bg-transparent text-primary hover:bg-slate-100 focus:ring-primary focus:ring-opacity-20;
+  }
+  .btn.elevated {
+    @apply bg-surface-container-low text-primary shadow-sm hover:shadow-md focus:ring-primary focus:ring-opacity-20;
+  }
+  .btn.text {
+    @apply bg-transparent text-primary hover:bg-slate-100 focus:ring-primary focus:ring-opacity-20;
+  }
+
+  /* Material Me Icon Button Styles */
+  .iconBtn {
+    @apply inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+  .iconBtn.filled {
+    @apply bg-black text-white hover:bg-gray-800 hover:shadow-md focus:ring-black focus:ring-opacity-20;
+  }
+  .iconBtn.tonal {
+    @apply bg-secondary-container text-on-secondary-container hover:shadow-sm focus:ring-secondary focus:ring-opacity-20;
+  }
+  .iconBtn.outlined {
+    @apply border border-outline bg-transparent text-on-surface-variant hover:bg-slate-100 focus:ring-slate-300 focus:ring-opacity-20;
+  }
+  .iconBtn.standard {
+    @apply bg-transparent text-on-surface-variant hover:bg-slate-100 focus:ring-slate-300 focus:ring-opacity-20;
+  }
+
+  /* Material Me Utilities */
+  .rounded-extra-large { @apply rounded-[28px]; }
+  .shadow-mm-1 { box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 1px 3px 1px rgba(0, 0, 0, 0.15); }
+  .shadow-mm-2 { box-shadow: 0px 1px 2px 0px rgba(0, 0, 0, 0.3), 0px 2px 6px 2px rgba(0, 0, 0, 0.15); }
+  .shadow-mm-3 { box-shadow: 0px 4px 8px 3px rgba(0, 0, 0, 0.15), 0px 1px 3px 0px rgba(0, 0, 0, 0.3); }
+
+  /* Custom animations */
+  .animate-determinate {
+    animation: determinate 2s linear infinite;
+  }
+  .animate-indeterminate {
+    animation: indeterminate 2s linear infinite;
+  }
+  .animate-transition-top {
+    animation: slideInTop 0.3s ease-out;
+  }
+  .animate-transition-left {
+    animation: slideInLeft 0.3s ease-out;
+  }
+  .animate-spin-lazy {
+    animation: spin 3s linear infinite;
+  }
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+@keyframes determinate {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+@keyframes indeterminate {
+  0% { left: -100%; width: 100%; }
+  50% { left: 100%; width: 10%; }
+  100% { left: 100%; width: 100%; }
+}
+
+@keyframes slideInTop {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes slideInLeft {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: translateX(0); }
+}
