@@ -16,6 +16,12 @@ interface Activity {
   declarativeLanguage?: string;
   modifications?: string;
   estimatedDuration: string;
+  adultSupport?: {
+    emotionalPreparation: string;
+    coRegulationStrategy: string;
+    troubleshooting: string;
+    successReframing: string;
+  };
 }
 
 interface Day {
@@ -367,48 +373,64 @@ export default function DailyActivityView() {
 
               {activeTab === 'adult-support' && (
                 <div className="space-y-4">
-                  {/* Neurodiversity Support Sections */}
-                  <div className="space-y-3">
-                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span>🧠</span>
-                        <h4 className="text-label-large font-medium text-blue-800">Emotional Preparation</h4>
-                      </div>
-                      <p className="text-body-medium text-blue-700">
-                        Your child might become deeply absorbed in building and resist transitions - this shows their autistic strength of focused attention, not defiance. The combination of Hot Wheels, building, and creative content might trigger intense engagement.
-                      </p>
-                    </div>
+                  {activity.adultSupport ? (
+                    <div className="space-y-3">
+                      {activity.adultSupport.emotionalPreparation && (
+                        <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>🧠</span>
+                            <h4 className="text-label-large font-medium text-blue-800">Emotional Preparation</h4>
+                          </div>
+                          <p className="text-body-medium text-blue-700">
+                            {activity.adultSupport.emotionalPreparation}
+                          </p>
+                        </div>
+                      )}
 
-                    <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span>⚡</span>
-                        <h4 className="text-label-large font-medium text-green-800">Co-regulation Strategy</h4>
-                      </div>
-                      <p className="text-body-medium text-green-700">
-                        If you feel frustrated by their intense focus on track building over geography learning, remember this is their brain's superpower - breathe and join their world. Let the learning happen through their interests.
-                      </p>
-                    </div>
+                      {activity.adultSupport.coRegulationStrategy && (
+                        <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>⚡</span>
+                            <h4 className="text-label-large font-medium text-green-800">Co-regulation Strategy</h4>
+                          </div>
+                          <p className="text-body-medium text-green-700">
+                            {activity.adultSupport.coRegulationStrategy}
+                          </p>
+                        </div>
+                      )}
 
-                    <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span>🔧</span>
-                        <h4 className="text-label-large font-medium text-orange-800">Troubleshooting</h4>
-                      </div>
-                      <p className="text-body-medium text-orange-700">
-                        If they reject the cultural connections, just focus on the building and movement - geography and cultural learning can happen naturally through their interests in cars and tracks.
-                      </p>
-                    </div>
+                      {activity.adultSupport.troubleshooting && (
+                        <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>🔧</span>
+                            <h4 className="text-label-large font-medium text-orange-800">Troubleshooting</h4>
+                          </div>
+                          <p className="text-body-medium text-orange-700">
+                            {activity.adultSupport.troubleshooting}
+                          </p>
+                        </div>
+                      )}
 
-                    <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded-r-lg">
-                      <div className="flex items-center gap-2 mb-2">
-                        <span>✨</span>
-                        <h4 className="text-label-large font-medium text-purple-800">Success Reframing</h4>
-                      </div>
-                      <p className="text-body-medium text-purple-700">
-                        Success is your child being engaged and happy with building, creating, or exploring - not completing every planned cultural element. Any connection they make between their interests and the wider world is meaningful learning.
-                      </p>
+                      {activity.adultSupport.successReframing && (
+                        <div className="bg-purple-50 border-l-4 border-purple-400 p-4 rounded-r-lg">
+                          <div className="flex items-center gap-2 mb-2">
+                            <span>✨</span>
+                            <h4 className="text-label-large font-medium text-purple-800">Success Reframing</h4>
+                          </div>
+                          <p className="text-body-medium text-purple-700">
+                            {activity.adultSupport.successReframing}
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
+                  ) : (
+                    <div className="text-center py-8">
+                      <div className="text-on-surface-variant">
+                        <p className="text-body-medium mb-2">Adult Support guidance will appear here</p>
+                        <p className="text-body-small">This section provides neurodiversity-affirming support strategies for parents and caregivers.</p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               )}
 

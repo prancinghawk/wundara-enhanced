@@ -1,6 +1,5 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
-import { TopAppBar } from '../ui/components/top-app-bar/TopAppBar';
 import { NavigationDrawerIn } from '../ui/components/navigation-drawer/NavigationDrawerIn';
 import { MdDashboard, MdAssignment, MdTimeline, MdLibraryBooks, MdGroups, MdCalendarMonth, MdChat, MdPerson } from 'react-icons/md';
 import { UserProfile } from '../components/auth/UserProfile';
@@ -72,16 +71,17 @@ export default function AppShell() {
           label="AI Chat"
           rightElement={isActive(pathname, '/chat') ? '•' : undefined}
         />
+        
+        {/* User Profile at bottom */}
+        <div className="mt-auto pt-4 border-t border-outline">
+          <div className="px-3">
+            <UserProfile />
+          </div>
+        </div>
       </NavigationDrawerIn>
 
       {/* Main area */}
       <div className="flex min-w-0 flex-1 flex-col">
-        <TopAppBar>
-          <TopAppBar.Small 
-            title="Wundara"
-            rightElement={<UserProfile />}
-          />
-        </TopAppBar>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <div className="mx-auto max-w-7xl">
             <Outlet />

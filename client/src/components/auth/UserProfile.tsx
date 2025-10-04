@@ -11,22 +11,24 @@ function DevUserProfile() {
     <div className="relative">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low transition-colors text-left"
       >
-        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
-          <MdAccountCircle size={20} className="text-primary" />
+        <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
+          <MdAccountCircle size={24} className="text-primary" />
         </div>
-        <div className="text-left hidden sm:block">
-          <p className="text-body-medium font-medium">Dev User</p>
-          <p className="text-body-small text-on-surface-variant">development@wundara.com</p>
+        <div className="flex-1 min-w-0">
+          <p className="text-body-medium font-medium truncate">Dev User</p>
+          <p className="text-body-small text-on-surface-variant truncate">development@wundara.com</p>
         </div>
-        {isOpen ? <MdExpandLess size={16} /> : <MdExpandMore size={16} />}
+        <div className="flex-shrink-0">
+          {isOpen ? <MdExpandLess size={16} /> : <MdExpandMore size={16} />}
+        </div>
       </button>
 
       {isOpen && (
         <>
           <div className="fixed inset-0 z-40" onClick={() => setIsOpen(false)} />
-          <div className="absolute right-0 top-full mt-2 w-64 bg-surface-container border border-outline rounded-lg shadow-lg z-50">
+          <div className="absolute left-0 bottom-full mb-2 w-64 bg-surface-container border border-outline rounded-lg shadow-lg z-50">
             <div className="p-4 border-b border-outline">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
@@ -79,28 +81,30 @@ export function UserProfile() {
       {/* User Button */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="flex items-center gap-2 p-2 rounded-lg hover:bg-surface-container-low transition-colors"
+        className="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-surface-container-low transition-colors text-left"
       >
-        <div className="w-8 h-8 bg-primary/20 rounded-full flex items-center justify-center">
+        <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center flex-shrink-0">
           {user.imageUrl ? (
             <img 
               src={user.imageUrl} 
               alt={user.fullName || user.emailAddresses[0]?.emailAddress || 'User'} 
-              className="w-8 h-8 rounded-full object-cover"
+              className="w-10 h-10 rounded-full object-cover"
             />
           ) : (
-            <MdAccountCircle size={20} className="text-primary" />
+            <MdAccountCircle size={24} className="text-primary" />
           )}
         </div>
-        <div className="text-left hidden sm:block">
-          <p className="text-body-medium font-medium">
+        <div className="flex-1 min-w-0">
+          <p className="text-body-medium font-medium truncate">
             {user.fullName || user.firstName || 'User'}
           </p>
-          <p className="text-body-small text-on-surface-variant">
+          <p className="text-body-small text-on-surface-variant truncate">
             {user.emailAddresses[0]?.emailAddress}
           </p>
         </div>
-        {isOpen ? <MdExpandLess size={16} /> : <MdExpandMore size={16} />}
+        <div className="flex-shrink-0">
+          {isOpen ? <MdExpandLess size={16} /> : <MdExpandMore size={16} />}
+        </div>
       </button>
 
       {/* Dropdown Menu */}
@@ -113,7 +117,7 @@ export function UserProfile() {
           />
           
           {/* Menu */}
-          <div className="absolute right-0 top-full mt-2 w-64 bg-surface-container border border-outline rounded-lg shadow-lg z-50">
+          <div className="absolute left-0 bottom-full mb-2 w-64 bg-surface-container border border-outline rounded-lg shadow-lg z-50">
             <div className="p-4 border-b border-outline">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-primary/20 rounded-full flex items-center justify-center">
