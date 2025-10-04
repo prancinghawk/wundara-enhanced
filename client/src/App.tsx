@@ -18,10 +18,9 @@ function App() {
       <Route path="/sign-in" element={<SignIn />} />
       <Route path="/sign-up" element={<SignUp />} />
       
-      {/* Email Verification Routes */}
-      <Route path="/sign-up/verify-email-address" element={<SignUp />} />
-      <Route path="/sign-in/verify-email-address" element={<SignIn />} />
-      <Route path="/verify-email" element={<SignUp />} />
+      {/* Clerk Authentication Sub-routes (factor-one, factor-two, verify-email, etc.) */}
+      <Route path="/sign-in/*" element={<SignIn />} />
+      <Route path="/sign-up/*" element={<SignUp />} />
       
       {/* OAuth Callback Routes */}
       <Route path="/sso-callback" element={<Navigate to="/dashboard" replace />} />

@@ -96,20 +96,33 @@ Configure required fields:
 **"Redirect URL not allowed"**:
 - Add the exact URL to allowed redirects in Clerk dashboard
 - Include both http://localhost:3000 and the specific path
-
 **"Invalid publishable key"**:
 - Verify key starts with `pk_test_`
 - Check for extra spaces or characters
 - Ensure key matches the one in Clerk dashboard
 
-**"Authentication failed"**:
-- Check server logs for Clerk errors
-- Verify secret key is correct
-- Ensure USE_DEV_AUTH=false in server .env
+**"Page not found" on sign-in/factor-one**:
+- This occurs when Clerk creates sub-routes like `/sign-in/factor-one` for MFA
+- Fixed by adding wildcard routes: `/sign-in/*` and `/sign-up/*` in App.tsx
+- Ensure Clerk components use `routing="path"` with correct `path` props
 
 **Infinite redirect loop**:
 - Check that sign-in/sign-up URLs don't require authentication
 - Verify ProtectedRoute logic excludes auth pages
+
+{{ ... }}
+
+**IMPORTANT**: Wundara is configured to always run on consistent ports:
+- **Client**: http://localhost:3000 (configured in vite.config.ts and package.json)
+- **Server**: http://localhost:3001
+
+**Clerk URLs should be configured as**:
+- Sign-in URL: `http://localhost:3000/sign-in`
+- Sign-up URL: `http://localhost:3000/sign-up`
+- After sign-in URL: `http://localhost:3000/dashboard`
+- After sign-up URL: `http://localhost:3000/dashboard`
+
+**Easy Startup**: Use `./start-wundara.sh` to start both services with correct ports.
 
 ## **Production Deployment Notes**
 

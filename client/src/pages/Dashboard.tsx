@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card } from '../ui/components/cards/Card';
 import { Button } from '../ui/components/button/common-button/Button';
-import { Progress } from '../ui/components/progress-bar/Progress';
-import { TextElement } from '../ui/elements/common/TextElement';
-import { MdAdd, MdTrendingUp, MdGroup, MdCalendarToday, MdChat } from 'react-icons/md';
+import { MdAdd, MdAssignment, MdPerson, MdTrendingUp, MdArrowForward, MdGroup, MdCalendarToday, MdChat } from 'react-icons/md';
 import { apiFetch } from '../services/api';
+import { useAuth } from '@clerk/clerk-react';
 
 type Child = {
   id: string;
@@ -32,6 +32,7 @@ type Plan = {
 };
 
 export default function Dashboard() {
+  const { getToken } = useAuth();
   const [children, setChildren] = useState<Child[]>([]);
   const [recentPlans, setRecentPlans] = useState<Plan[]>([]);
   const [currentPlan, setCurrentPlan] = useState<Plan | null>(null);
@@ -41,15 +42,16 @@ export default function Dashboard() {
     async function fetchDashboardData() {
       try {
         setLoading(true);
+        const token = await getToken();
         
         // Fetch children
-        const childrenData = await apiFetch('/api/children') as Child[];
+        const childrenData = await apiFetch('/api/children', { token }) as Child[];
         setChildren(childrenData);
         
         // If we have children, fetch their plans
         if (childrenData.length > 0) {
           const firstChild = childrenData[0];
-          const plansData = await apiFetch(`/api/plans/child/${firstChild.id}`) as Plan[];
+          const plansData = await apiFetch(`/api/plans/child/${firstChild.id}`, { token }) as Plan[];
           setRecentPlans(plansData);
           
           // Set the most recent plan as current
@@ -178,7 +180,9 @@ export default function Dashboard() {
                       <div className="mb-2 flex justify-between text-body-small">
                         <span>0 of {currentPlan.planJson.days.length} days completed</span>
                       </div>
-                      <Progress percentageValue={0} color="bg-primary" />
+                      <div className="w-full bg-surface-container-low rounded-full h-2">
+                        <div className="bg-primary h-2 rounded-full" style={{ width: '0%' }}></div>
+                      </div>
                     </>
                   )}
                 </div>

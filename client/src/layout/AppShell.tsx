@@ -77,11 +77,10 @@ export default function AppShell() {
       {/* Main area */}
       <div className="flex min-w-0 flex-1 flex-col">
         <TopAppBar>
-          <TopAppBar.Small>
-            <div className="ml-auto">
-              <UserProfile />
-            </div>
-          </TopAppBar.Small>
+          <TopAppBar.Small 
+            title="Wundara"
+            rightElement={<UserProfile />}
+          />
         </TopAppBar>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <div className="mx-auto max-w-7xl">
