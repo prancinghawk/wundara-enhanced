@@ -453,16 +453,33 @@ export default function DailyActivityView() {
                     </div>
                   </div>
 
-                  {activity.declarativeLanguage ? (
-                    <div>
-                      <h4 className="text-title-medium mb-4">Activity-Specific Language Guidance</h4>
+                  {/* Activity-Specific Language Guidance */}
+                  {activity.declarativeLanguage && typeof activity.declarativeLanguage === 'string' && (
+                    <div className="mb-6">
+                      <h4 className="text-title-medium mb-4">🎯 Activity-Specific Language Guidance</h4>
                       <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
-                        <p className="text-body-medium text-green-800">
-                          {activity.declarativeLanguage}
+                        <p className="text-body-small text-green-700 mb-3 font-medium">
+                          Supportive phrases tailored specifically to this activity:
                         </p>
+                        <div className="space-y-2">
+                          {activity.declarativeLanguage
+                            .split(/[.!?]+/)
+                            .filter(phrase => phrase.trim().length > 0)
+                            .map((phrase, idx) => (
+                              <div key={idx} className="flex items-start gap-2 p-3 bg-green-100 rounded-lg">
+                                <span className="text-green-600 mt-0.5">🌟</span>
+                                <p className="text-body-small italic text-green-800 font-medium">
+                                  "{phrase.trim()}{phrase.trim().match(/[.!?]$/) ? '' : '.'}"
+                                </p>
+                              </div>
+                            ))}
+                        </div>
                       </div>
                     </div>
-                  ) : (
+                  )}
+
+                  {/* General Language Examples - Always Show */}
+                  <div>
                     <div>
                       <div 
                         className="cursor-pointer"
@@ -535,7 +552,7 @@ export default function DailyActivityView() {
                         </div>
                       )}
                     </div>
-                  )}
+                  </div>
                 </div>
               )}
 
