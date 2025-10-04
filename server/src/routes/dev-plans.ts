@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { devRequireAuth, AuthedRequest, getUserId } from "../middleware/dev-auth";
+import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 import { generateWeeklyPlan } from "../services/ai";
 import { db } from "../config/db";
 import { children, learningPlans } from "../../drizzle/schema";
@@ -11,10 +11,12 @@ export const devPlansRouter = Router();
 const mockPlansStorage: any[] = [];
 
 // Generate a plan for a child using real AI but dev auth
-devPlansRouter.post("/generate/:childId", devRequireAuth(), async (req: AuthedRequest, res, next) => {
+devPlansRouter.post("/generate/:childId", hybridRequireAuth(), async (req: AuthedRequest, res, next) => {
   try {
     const userId = getUserId(req);
     const { childId } = req.params;
+    
+    console.log(`🎯 Plan generation request for childId: ${childId}, userId: ${userId}`);
 
     // Try to get child from database first, then check mock children via internal API
     let child;
@@ -27,7 +29,7 @@ devPlansRouter.post("/generate/:childId", devRequireAuth(), async (req: AuthedRe
     // If not found in database, make internal API call to get mock children
     if (!child) {
       try {
-        const response = await fetch(`http://localhost:${process.env.PORT || 3002}/api/children`, {
+        const response = await fetch(`http://localhost:${process.env.PORT || 3001}/api/children`, {
           headers: { 'Authorization': req.headers.authorization || '' }
         });
         const mockChildren = await response.json();
@@ -39,7 +41,19 @@ devPlansRouter.post("/generate/:childId", devRequireAuth(), async (req: AuthedRe
 
     if (!child) return res.status(404).json({ error: "Child not found" });
 
+    // Extract context from request body if provided
+    const context = req.body?.context;
+    
     console.log(`🤖 Attempting to generate real AI plan for ${child.firstName}...`);
+    if (context) {
+      console.log('🎯 Context provided:', {
+        theme: context.learningTheme,
+        focusAreas: context.focusAreas,
+        energyLevel: context.energyLevel,
+        materialAccess: context.materialAccess
+      });
+    }
+    
     let ai;
     try {
       ai = await generateWeeklyPlan({ 
@@ -50,7 +64,8 @@ devPlansRouter.post("/generate/:childId", devRequireAuth(), async (req: AuthedRe
           interests: child.interests,
           learningContext: (child.learningContext as any) ?? "homeschool",
           state: child.state,
-        }
+        },
+        context
       });
       console.log(`✅ Successfully generated AI plan for ${child.firstName}`);
     } catch (aiError: any) {
@@ -123,6 +138,7 @@ devPlansRouter.post("/generate/:childId", devRequireAuth(), async (req: AuthedRe
       mockPlansStorage.push(plan);
     }
 
+    console.log(`✅ Returning plan for ${child.firstName} with ID: ${plan.id}`);
     res.status(201).json(plan);
   } catch (err) {
     console.error("Plan generation error:", err);
@@ -131,7 +147,7 @@ devPlansRouter.post("/generate/:childId", devRequireAuth(), async (req: AuthedRe
 });
 
 // List plans for a child
-devPlansRouter.get("/child/:childId", devRequireAuth(), async (req: AuthedRequest, res) => {
+devPlansRouter.get("/child/:childId", hybridRequireAuth(), async (req: AuthedRequest, res) => {
   try {
     const { childId } = req.params;
     let plans: any[] = [];
@@ -156,7 +172,7 @@ devPlansRouter.get("/child/:childId", devRequireAuth(), async (req: AuthedReques
 });
 
 // Get plan by id
-devPlansRouter.get("/:id", devRequireAuth(), async (req: AuthedRequest, res) => {
+devPlansRouter.get("/:id", hybridRequireAuth(), async (req: AuthedRequest, res) => {
   try {
     const { id } = req.params;
     let plan = null;

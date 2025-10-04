@@ -5,6 +5,7 @@ import { MdAdd, MdEdit, MdDelete, MdPerson, MdSchool } from 'react-icons/md';
 import { ChildProfileForm } from '../components/ChildProfileForm';
 import { ChildProfileWizard } from '../components/ChildProfileWizard';
 import { apiFetch } from '../services/api';
+import { useAuth } from '@clerk/clerk-react';
 
 interface Child {
   id: string;
@@ -27,6 +28,7 @@ interface ChildProfile {
 }
 
 export default function ChildProfiles() {
+  const { getToken } = useAuth();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(true);
   const [showForm, setShowForm] = useState(false);
@@ -40,7 +42,8 @@ export default function ChildProfiles() {
   const fetchChildren = async () => {
     try {
       setLoading(true);
-      const data = await apiFetch('/api/children') as Child[];
+      const token = await getToken();
+      const data = await apiFetch('/api/children', { token }) as Child[];
       setChildren(data);
     } catch (error) {
       console.error('Failed to fetch children:', error);
@@ -52,10 +55,11 @@ export default function ChildProfiles() {
 
   const handleCreateChild = async (profile: ChildProfile) => {
     try {
+      const token = await getToken();
       const newChild = await apiFetch('/api/children', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile)
+        body: profile,
+        token
       }) as Child;
       
       setChildren(prev => [...prev, newChild]);
@@ -72,10 +76,11 @@ export default function ChildProfiles() {
     if (!editingChild) return;
     
     try {
+      const token = await getToken();
       const updatedChild = await apiFetch(`/api/children/${editingChild.id}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(profile)
+        body: profile,
+        token
       }) as Child;
       
       setChildren(prev => prev.map(child => 
@@ -96,8 +101,10 @@ export default function ChildProfiles() {
     }
 
     try {
+      const token = await getToken();
       await apiFetch(`/api/children/${childId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        token
       });
       
       setChildren(prev => prev.filter(child => child.id !== childId));

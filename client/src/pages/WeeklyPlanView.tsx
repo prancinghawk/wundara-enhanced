@@ -5,6 +5,7 @@ import { Button } from '../ui/components/button/common-button/Button';
 import { MdArrowBack, MdEdit, MdCalendarToday, MdSchedule, MdPlayArrow } from 'react-icons/md';
 import { apiFetch } from '../services/api';
 import { ActivityPathways } from '../components/ActivityPathways';
+import { useAuth } from '@clerk/clerk-react';
 
 interface Activity {
   title: string;
@@ -64,6 +65,7 @@ interface Plan {
 export default function WeeklyPlanView() {
   const { planId } = useParams<{ planId: string }>();
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -74,7 +76,10 @@ export default function WeeklyPlanView() {
       
       try {
         setLoading(true);
-        const planData = await apiFetch(`/api/plans/${planId}`) as Plan;
+        const token = await getToken();
+        console.log('Fetching plan with ID:', planId, 'Token:', token ? 'Present' : 'Missing');
+        const planData = await apiFetch(`/api/plans/${planId}`, { token }) as Plan;
+        console.log('Plan data received:', planData);
         setPlan(planData);
       } catch (err) {
         console.error('Failed to fetch plan:', err);
@@ -119,7 +124,21 @@ export default function WeeklyPlanView() {
     );
   }
 
-  const structuredData = plan.planJson.structured;
+  // Try to get structured data, or parse from raw if needed
+  let structuredData = plan.planJson.structured;
+  
+  // If no structured data but we have raw JSON, try to parse it
+  if (!structuredData && plan.planJson.raw) {
+    try {
+      const parsed = JSON.parse(plan.planJson.raw);
+      // Check if it looks like structured plan data
+      if (parsed && parsed.days && Array.isArray(parsed.days)) {
+        structuredData = parsed;
+      }
+    } catch (e) {
+      console.log('Could not parse raw plan data:', e);
+    }
+  }
 
   return (
     <div className="space-y-6">
@@ -257,7 +276,20 @@ export default function WeeklyPlanView() {
         // Fallback for unstructured data
         <Card className="p-6">
           <h2 className="text-title-large mb-4">Plan Content</h2>
-          <div className="whitespace-pre-wrap text-body-medium">{plan.planJson.raw}</div>
+          <div className="bg-surface-container-low p-4 rounded-lg mb-4">
+            <p className="text-body-medium text-on-surface-variant mb-2">
+              This plan data couldn't be displayed in the structured format. This might be due to an older plan format or a parsing issue.
+            </p>
+            <p className="text-body-small text-on-surface-variant">
+              You can still view the raw plan content below, or try regenerating the plan for the best experience.
+            </p>
+          </div>
+          <details className="cursor-pointer">
+            <summary className="text-title-medium mb-2 hover:text-primary">View Raw Plan Data</summary>
+            <div className="whitespace-pre-wrap text-body-small font-mono bg-surface-container p-4 rounded-lg overflow-auto max-h-96">
+              {plan.planJson.raw}
+            </div>
+          </details>
         </Card>
       )}
     </div>

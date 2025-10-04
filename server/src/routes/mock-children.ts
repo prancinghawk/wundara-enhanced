@@ -1,5 +1,5 @@
 import { Router } from "express";
-import { devRequireAuth, AuthedRequest, getUserId } from "../middleware/dev-auth";
+import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 
 export const mockChildrenRouter = Router();
 
@@ -32,14 +32,14 @@ const mockChildren = [
 ];
 
 // List children for user
-mockChildrenRouter.get("/", devRequireAuth(), async (req: AuthedRequest, res) => {
+mockChildrenRouter.get("/", hybridRequireAuth(), async (req: AuthedRequest, res) => {
   const userId = getUserId(req);
   const userChildren = mockChildren.filter(child => child.userId === userId);
   res.json(userChildren);
 });
 
 // Create child profile
-mockChildrenRouter.post("/", devRequireAuth(), async (req: AuthedRequest, res) => {
+mockChildrenRouter.post("/", hybridRequireAuth(), async (req: AuthedRequest, res) => {
   const userId = getUserId(req);
   const { firstName, ageYears, neurotype, interests, learningContext, state } = req.body ?? {};
   
@@ -63,7 +63,7 @@ mockChildrenRouter.post("/", devRequireAuth(), async (req: AuthedRequest, res) =
 });
 
 // Update child profile
-mockChildrenRouter.put("/:id", devRequireAuth(), async (req: AuthedRequest, res) => {
+mockChildrenRouter.put("/:id", hybridRequireAuth(), async (req: AuthedRequest, res) => {
   const userId = getUserId(req);
   const { id } = req.params;
   const { firstName, ageYears, neurotype, interests, learningContext, state } = req.body ?? {};
@@ -90,7 +90,7 @@ mockChildrenRouter.put("/:id", devRequireAuth(), async (req: AuthedRequest, res)
 });
 
 // Delete child profile
-mockChildrenRouter.delete("/:id", devRequireAuth(), async (req: AuthedRequest, res) => {
+mockChildrenRouter.delete("/:id", hybridRequireAuth(), async (req: AuthedRequest, res) => {
   const userId = getUserId(req);
   const { id } = req.params;
   

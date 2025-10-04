@@ -5,6 +5,7 @@ import { Button } from '../ui/components/button/common-button/Button';
 import { MdArrowBack, MdHome, MdPrint, MdSchedule, MdCheckCircle, MdExpandMore, MdExpandLess } from 'react-icons/md';
 import { apiFetch } from '../services/api';
 import { getCurriculumDescription } from '../utils/curriculumLibrary';
+import { useAuth } from '@clerk/clerk-react';
 
 interface Activity {
   title: string;
@@ -64,6 +65,7 @@ interface Plan {
 export default function DailyActivityView() {
   const { planId, dayIndex } = useParams<{ planId: string; dayIndex: string }>();
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [plan, setPlan] = useState<Plan | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -117,13 +119,14 @@ export default function DailyActivityView() {
         timestamp: new Date().toISOString()
       };
       
+      const token = await getToken();
       await apiFetch(`/api/progress/${planId}/day/${dayIndexNum}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
+        body: {
           engagementNotes,
           evidenceJson
-        })
+        },
+        token
       });
       
       setSaveMessage('Progress saved successfully!');
@@ -143,10 +146,13 @@ export default function DailyActivityView() {
       
       try {
         setLoading(true);
-        const planData = await apiFetch(`/api/plans/${planId}`) as Plan;
+        const token = await getToken();
+        console.log('DailyActivityView: Fetching plan with ID:', planId, 'Token:', token ? 'Present' : 'Missing');
+        const planData = await apiFetch(`/api/plans/${planId}`, { token }) as Plan;
+        console.log('DailyActivityView: Plan data received:', planData);
         setPlan(planData);
       } catch (err) {
-        console.error('Failed to fetch plan:', err);
+        console.error('DailyActivityView: Failed to fetch plan:', err);
         setError('Failed to load plan');
       } finally {
         setLoading(false);
@@ -225,14 +231,6 @@ export default function DailyActivityView() {
     { id: 'reflection', label: 'Reflection' }
   ] as const;
 
-  const declarativeExamples = [
-    "I notice you've arranged those Hot Wheels in an interesting pattern",
-    "That's such a thoughtful way to connect the track pieces",
-    "I'm wondering what you think about this map",
-    "Your knowledge about cars shows incredible attention to detail",
-    "There are several ways we could build this",
-    "Your brain works differently, and that's exactly what makes this creative"
-  ];
 
   return (
     <div className="space-y-6">
@@ -332,186 +330,36 @@ export default function DailyActivityView() {
             <div className="mb-6">
               {activeTab === 'instructions' && (
                 <div className="space-y-6">
-                  {/* Activity Pathways */}
+                  {/* Activity Instructions */}
                   <div>
-                    <h4 className="text-title-medium mb-3">Activity Pathways</h4>
+                    <h4 className="text-title-medium mb-3">Activity Instructions</h4>
                     <p className="text-body-medium text-on-surface-variant mb-4">
-                      Choose the approach that feels right for your child today. Each path includes detailed setup, 
-                      step-by-step instructions, and wrap-up guidance.
+                      These instructions have been tailored to your child's current energy level and available materials.
                     </p>
                     
-                    {/* Low Demand Path */}
-                    <div className="mb-4">
-                      <div 
-                        className="cursor-pointer bg-green-50 border border-green-200 rounded-lg p-4"
-                        onClick={() => toggleSection('low-demand-path')}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                            <div>
-                              <h5 className="text-title-medium">Low Demand Path</h5>
-                              <p className="text-body-small text-green-700">PDA-friendly, high autonomy</p>
+                    {/* Single Contextual Instructions */}
+                    <div className="bg-primary/5 border border-primary/20 rounded-lg p-4">
+                      <div className="mb-4">
+                        <h6 className="text-label-large font-medium mb-2 flex items-center gap-2">
+                          <span>📋</span> Step-by-Step Instructions
+                        </h6>
+                        <div className="space-y-3 text-body-medium">
+                          {activity.instructions.split(/\d+\./).filter(step => step.trim()).map((step, idx) => (
+                            <div key={idx} className="flex items-start gap-3">
+                              <span className="text-primary mt-1 font-medium bg-primary/10 rounded-full w-6 h-6 flex items-center justify-center text-sm">
+                                {idx + 1}
+                              </span>
+                              <p className="flex-1">{step.trim()}</p>
                             </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-body-small text-green-700">Flexible approach</span>
-                            {expandedSections['low-demand-path'] ? <MdExpandLess /> : <MdExpandMore />}
-                          </div>
+                          ))}
                         </div>
                       </div>
                       
-                      {expandedSections['low-demand-path'] && (
-                        <div className="mt-3 p-4 bg-green-25 border-l-4 border-green-400 rounded-r-lg">
-                          <div className="mb-4">
-                            <h6 className="text-label-large font-medium mb-2">🛠️ Setup Required</h6>
-                            <p className="text-body-medium text-green-800">
-                              [10 mins] Set up materials casually, let child explore at their own pace, no pressure to follow exact steps.
-                            </p>
-                          </div>
-                          
-                          <div className="mb-4">
-                            <h6 className="text-label-large font-medium mb-2">📋 Step-by-Step Instructions</h6>
-                            <div className="space-y-2 text-body-medium text-green-800">
-                              {activity.instructions.split(/\d+\./).filter(step => step.trim()).map((step, idx) => (
-                                <div key={idx} className="flex items-start gap-2">
-                                  <span className="text-green-600 mt-1 font-medium">{idx + 1}.</span>
-                                  <p className="flex-1">{step.trim()}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h6 className="text-label-large font-medium mb-2">🎯 Wrap-Up</h6>
-                            <p className="text-body-medium text-green-800">
-                              Let child decide when they're finished - any engagement is success!
-                            </p>
-                          </div>
-                          
-                          <div className="mt-4 p-3 bg-green-100 rounded-lg">
-                            <p className="text-body-small text-green-700 italic">
-                              💡 Remember: These are guides, not rules. Follow your child's lead and energy levels.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* Moderate Structure Path */}
-                    <div className="mb-4">
-                      <div 
-                        className="cursor-pointer bg-yellow-50 border border-yellow-200 rounded-lg p-4"
-                        onClick={() => toggleSection('moderate-structure-path')}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 bg-yellow-500 rounded-full"></div>
-                            <div>
-                              <h5 className="text-title-medium">Moderate Structure Path</h5>
-                              <p className="text-body-small text-yellow-700">Shared control, balanced approach</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-body-small text-yellow-700">Guided steps</span>
-                            {expandedSections['moderate-structure-path'] ? <MdExpandLess /> : <MdExpandMore />}
-                          </div>
-                        </div>
+                      <div className="mt-4 p-3 bg-primary/10 rounded-lg">
+                        <p className="text-body-small text-primary italic">
+                          💡 These instructions have been personalized based on your child's energy level and available materials.
+                        </p>
                       </div>
-                      
-                      {expandedSections['moderate-structure-path'] && (
-                        <div className="mt-3 p-4 bg-yellow-25 border-l-4 border-yellow-400 rounded-r-lg">
-                          <div className="mb-4">
-                            <h6 className="text-label-large font-medium mb-2">🛠️ Setup Required</h6>
-                            <p className="text-body-medium text-yellow-800">
-                              [15 mins] Set up materials together, discuss the plan, and establish clear expectations.
-                            </p>
-                          </div>
-                          
-                          <div className="mb-4">
-                            <h6 className="text-label-large font-medium mb-2">📋 Step-by-Step Instructions</h6>
-                            <div className="space-y-2 text-body-medium text-yellow-800">
-                              {activity.instructions.split(/\d+\./).filter(step => step.trim()).map((step, idx) => (
-                                <div key={idx} className="flex items-start gap-2">
-                                  <span className="text-yellow-600 mt-1 font-medium">{idx + 1}.</span>
-                                  <p className="flex-1">{step.trim()}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h6 className="text-label-large font-medium mb-2">🎯 Wrap-Up</h6>
-                            <p className="text-body-medium text-yellow-800">
-                              Review what was learned and celebrate achievements together.
-                            </p>
-                          </div>
-                          
-                          <div className="mt-4 p-3 bg-yellow-100 rounded-lg">
-                            <p className="text-body-small text-yellow-700 italic">
-                              💡 Remember: Adjust the pace based on your child's responses and interest level.
-                            </p>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    {/* High Engagement Path */}
-                    <div className="mb-4">
-                      <div 
-                        className="cursor-pointer bg-blue-50 border border-blue-200 rounded-lg p-4"
-                        onClick={() => toggleSection('high-engagement-path')}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="flex items-center gap-3">
-                            <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
-                            <div>
-                              <h5 className="text-title-medium">High Engagement Path</h5>
-                              <p className="text-body-small text-blue-700">Detailed exploration, extended learning</p>
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-2">
-                            <span className="text-body-small text-blue-700">Deep dive</span>
-                            {expandedSections['high-engagement-path'] ? <MdExpandLess /> : <MdExpandMore />}
-                          </div>
-                        </div>
-                      </div>
-                      
-                      {expandedSections['high-engagement-path'] && (
-                        <div className="mt-3 p-4 bg-blue-25 border-l-4 border-blue-400 rounded-r-lg">
-                          <div className="mb-4">
-                            <h6 className="text-label-large font-medium mb-2">🛠️ Setup Required</h6>
-                            <p className="text-body-medium text-blue-800">
-                              [20 mins] Full setup with additional materials and extension activities prepared.
-                            </p>
-                          </div>
-                          
-                          <div className="mb-4">
-                            <h6 className="text-label-large font-medium mb-2">📋 Step-by-Step Instructions</h6>
-                            <div className="space-y-2 text-body-medium text-blue-800">
-                              {activity.instructions.split(/\d+\./).filter(step => step.trim()).map((step, idx) => (
-                                <div key={idx} className="flex items-start gap-2">
-                                  <span className="text-blue-600 mt-1 font-medium">{idx + 1}.</span>
-                                  <p className="flex-1">{step.trim()}</p>
-                                </div>
-                              ))}
-                            </div>
-                          </div>
-                          
-                          <div>
-                            <h6 className="text-label-large font-medium mb-2">🎯 Wrap-Up</h6>
-                            <p className="text-body-medium text-blue-800">
-                              Explore extensions, document learning, and plan follow-up activities.
-                            </p>
-                          </div>
-                          
-                          <div className="mt-4 p-3 bg-blue-100 rounded-lg">
-                            <p className="text-body-small text-blue-700 italic">
-                              💡 Remember: This path is for when your child is highly motivated and wants to explore deeply.
-                            </p>
-                          </div>
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -565,31 +413,105 @@ export default function DailyActivityView() {
               )}
 
               {activeTab === 'language' && (
-                <div>
-                  <div 
-                    className="cursor-pointer"
-                    onClick={() => toggleSection('declarative-examples')}
-                  >
-                    <div className="flex items-center gap-2 mb-3">
-                      <span>💬</span>
-                      <h4 className="text-label-large font-medium">Declarative Language Examples</h4>
-                      {expandedSections['declarative-examples'] ? <MdExpandLess /> : <MdExpandMore />}
+                <div className="space-y-6">
+                  {/* What is Declarative Language */}
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 border border-blue-200 rounded-lg p-4">
+                    <div className="flex items-start gap-3">
+                      <span className="text-2xl">🧠</span>
+                      <div>
+                        <h4 className="text-title-medium mb-2 text-blue-900">About Declarative Language</h4>
+                        <p className="text-body-medium text-blue-800 mb-2">
+                          Declarative language supports self-regulation by offering information and observations rather than commands. 
+                          It helps neurodivergent children feel connected and understood while maintaining their autonomy.
+                        </p>
+                        <p className="text-body-small text-blue-700">
+                          <strong>Key principles:</strong> Notice, wonder, offer information, validate the process.
+                        </p>
+                      </div>
                     </div>
                   </div>
-                  
-                  {expandedSections['declarative-examples'] && (
+
+                  {activity.declarativeLanguage ? (
                     <div>
-                      <p className="text-body-medium text-on-surface-variant mb-4">
-                        Use these connection-focused phrases instead of direct commands:
-                      </p>
-                      <div className="grid md:grid-cols-2 gap-4">
-                        {declarativeExamples.map((example, idx) => (
-                          <div key={idx} className="flex items-start gap-2 p-3 bg-surface-container-low rounded-lg">
-                            <span className="text-primary">💭</span>
-                            <p className="text-body-medium italic">"{example}"</p>
-                          </div>
-                        ))}
+                      <h4 className="text-title-medium mb-4">Activity-Specific Language Guidance</h4>
+                      <div className="bg-green-50 border-l-4 border-green-400 p-4 rounded-r-lg">
+                        <p className="text-body-medium text-green-800">
+                          {activity.declarativeLanguage}
+                        </p>
                       </div>
+                    </div>
+                  ) : (
+                    <div>
+                      <div 
+                        className="cursor-pointer"
+                        onClick={() => toggleSection('declarative-examples')}
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          <span>💬</span>
+                          <h4 className="text-label-large font-medium">General Language Examples</h4>
+                          {expandedSections['declarative-examples'] ? <MdExpandLess /> : <MdExpandMore />}
+                        </div>
+                      </div>
+                      
+                      {expandedSections['declarative-examples'] && (
+                        <div>
+                          <p className="text-body-medium text-on-surface-variant mb-4">
+                            Use these neuroaffirming declarative language phrases to support self-regulation and engagement:
+                          </p>
+                          <div className="space-y-4">
+                            <div>
+                              <h5 className="text-label-large font-medium mb-2 text-green-700">✨ Noticing & Wondering</h5>
+                              <div className="grid md:grid-cols-2 gap-3">
+                                {[
+                                  "I notice you're really focused on that part",
+                                  "I'm wondering what you're thinking about",
+                                  "I see you've made an interesting choice",
+                                  "I'm curious about your process"
+                                ].map((example, idx) => (
+                                  <div key={idx} className="flex items-start gap-2 p-3 bg-green-50 rounded-lg">
+                                    <span className="text-green-600">👁️</span>
+                                    <p className="text-body-small italic text-green-800">"{example}"</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h5 className="text-label-large font-medium mb-2 text-blue-700">🤝 Offering Information</h5>
+                              <div className="grid md:grid-cols-2 gap-3">
+                                {[
+                                  "There are different ways to approach this",
+                                  "Some people find it helpful to...",
+                                  "This material can be used in many ways",
+                                  "Your brain works in its own special way"
+                                ].map((example, idx) => (
+                                  <div key={idx} className="flex items-start gap-2 p-3 bg-blue-50 rounded-lg">
+                                    <span className="text-blue-600">💡</span>
+                                    <p className="text-body-small italic text-blue-800">"{example}"</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                            
+                            <div>
+                              <h5 className="text-label-large font-medium mb-2 text-purple-700">🌟 Affirming & Validating</h5>
+                              <div className="grid md:grid-cols-2 gap-3">
+                                {[
+                                  "Your ideas are valuable",
+                                  "You're taking your time to think",
+                                  "Everyone learns differently",
+                                  "Your perspective is important"
+                                ].map((example, idx) => (
+                                  <div key={idx} className="flex items-start gap-2 p-3 bg-purple-50 rounded-lg">
+                                    <span className="text-purple-600">💜</span>
+                                    <p className="text-body-small italic text-purple-800">"{example}"</p>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>
@@ -598,45 +520,34 @@ export default function DailyActivityView() {
               {activeTab === 'materials' && (
                 <div className="space-y-6">
                   <div>
-                    <h4 className="text-title-medium mb-4">Materials Needed</h4>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <h5 className="text-label-large mb-3 font-medium">🥘 Core Building Materials</h5>
-                        <ul className="space-y-2">
-                          <li className="text-body-medium">LEGO bricks (2-3 cups mixed colors and sizes)</li>
-                          <li className="text-body-medium">Playdough (4-5 colors, 1 container each)</li>
-                          <li className="text-body-medium">Hot Wheels cars (5-10 cars)</li>
-                        </ul>
+                    <h4 className="text-title-medium mb-4">Materials Needed for This Activity</h4>
+                    {activity.materials && activity.materials.length > 0 ? (
+                      <div className="grid md:grid-cols-2 gap-4">
+                        {activity.materials.map((material, idx) => (
+                          <div key={idx} className="flex items-start gap-3 p-3 bg-surface-container-low rounded-lg">
+                            <span className="text-primary text-lg">📎</span>
+                            <p className="text-body-medium">{material}</p>
+                          </div>
+                        ))}
                       </div>
-                      
-                      <div>
-                        <h5 className="text-label-large mb-3 font-medium">🚗 Track and Movement</h5>
-                        <ul className="space-y-2">
-                          <li className="text-body-medium">Hot Wheels track pieces (10-15 pieces)</li>
-                          <li className="text-body-medium">Base plates or cardboard (2-3 large pieces)</li>
-                        </ul>
+                    ) : (
+                      <div className="bg-orange-50 border-l-4 border-orange-400 p-4 rounded-r-lg">
+                        <p className="text-body-medium text-orange-800">
+                          No specific materials listed for this activity. Check the activity instructions for any materials mentioned.
+                        </p>
                       </div>
-                    </div>
+                    )}
                   </div>
                   
                   <div>
-                    <h4 className="text-title-medium mb-4">🌏 Cultural and Geographic Resources</h4>
-                    <div className="grid md:grid-cols-2 gap-6">
-                      <div>
-                        <ul className="space-y-2">
-                          <li className="text-body-medium">World map or globe (1)</li>
-                          <li className="text-body-medium">Pictures of different countries (5-10 images)</li>
-                          <li className="text-body-medium">Music playlist (1-2 hours of K-pop)</li>
-                        </ul>
-                      </div>
-                      
-                      <div>
-                        <h5 className="text-label-large mb-3 font-medium">📱 Documentation and Creativity</h5>
-                        <ul className="space-y-2">
-                          <li className="text-body-medium">Paper and markers (10 sheets, basic colors)</li>
-                          <li className="text-body-medium">Camera or phone (1)</li>
-                        </ul>
-                      </div>
+                    <h4 className="text-title-medium mb-4">General Preparation Tips</h4>
+                    <div className="bg-blue-50 border-l-4 border-blue-400 p-4 rounded-r-lg">
+                      <ul className="space-y-2 text-body-medium text-blue-800">
+                        <li>• Gather materials in advance to avoid interruptions</li>
+                        <li>• Have backup options ready if your child shows different interests</li>
+                        <li>• Create a comfortable, distraction-free space for the activity</li>
+                        <li>• Remember: the goal is engagement, not perfection</li>
+                      </ul>
                     </div>
                   </div>
                 </div>

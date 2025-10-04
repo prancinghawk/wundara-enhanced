@@ -176,7 +176,7 @@ export function ChildProfileWizard({ onSave, onCancel, initialData, isEditing = 
             <div className="text-center mb-6">
               <h2 className="text-title-large mb-2">Tell us about your learner</h2>
               <p className="text-body-medium text-on-surface-variant">
-                This helps Wundara craft gentle, interest-led plans that fit your context. You can change anything later.
+                This helps craft gentle, interest-led plans that fit your context. You can change anything later.
               </p>
             </div>
 

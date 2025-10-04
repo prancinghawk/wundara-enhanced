@@ -4,6 +4,8 @@ import { Card } from '../ui/components/cards/Card';
 import { Button } from '../ui/components/button/common-button/Button';
 import { MdAdd, MdAutoAwesome } from 'react-icons/md';
 import { apiFetch } from '../services/api';
+import { CreatePlanWizard } from '../components/CreatePlanWizard';
+import { useAuth } from '@clerk/clerk-react';
 // Removed PlanViewer import - now using separate route
 
 type Child = {
@@ -25,18 +27,21 @@ type Plan = {
 
 export default function Plans() {
   const navigate = useNavigate();
+  const { getToken } = useAuth();
   const [children, setChildren] = useState<Child[]>([]);
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
   const [plans, setPlans] = useState<Plan[]>([]);
   const [loading, setLoading] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [showCreateWizard, setShowCreateWizard] = useState(false);
   // Removed viewingPlan state - now using separate route
 
   useEffect(() => {
     // Fetch real children data
     async function fetchChildren() {
       try {
-        const data = await apiFetch('/api/children') as Child[];
+        const token = await getToken();
+        const data = await apiFetch('/api/children', { token }) as Child[];
         setChildren(data);
         if (data.length > 0) {
           setSelectedChildId(data[0].id);
@@ -54,7 +59,8 @@ export default function Plans() {
     
     async function fetchPlans() {
       try {
-        const data = await apiFetch(`/api/plans/child/${selectedChildId}`) as Plan[];
+        const token = await getToken();
+        const data = await apiFetch(`/api/plans/child/${selectedChildId}`, { token }) as Plan[];
         setPlans(data);
       } catch (error) {
         console.error('Failed to fetch plans:', error);
@@ -64,22 +70,33 @@ export default function Plans() {
     fetchPlans();
   }, [selectedChildId]);
 
-  async function generate() {
-    if (!selectedChildId) return;
-    setLoading(true);
-    setMessage(null);
-    try {
-      const newPlan = await apiFetch(`/api/plans/generate/${selectedChildId}`, {
-        method: 'POST'
-      }) as Plan;
-      setPlans(prev => [newPlan, ...prev]);
-      setMessage('Plan generated successfully!');
-    } catch (e: any) {
-      console.error('Failed to generate plan:', e);
-      setMessage('Failed to generate plan. Please try again.');
-    } finally {
-      setLoading(false);
+  async function handlePlanCreated(newPlan: Plan) {
+    console.log('handlePlanCreated called with:', newPlan);
+    
+    // Add the new plan to the list immediately
+    setPlans(prev => {
+      console.log('Adding plan to existing plans:', prev.length);
+      return [newPlan, ...prev];
+    });
+    setMessage('Plan generated successfully!');
+    
+    // Also refresh the plans list from server to ensure consistency
+    if (selectedChildId) {
+      console.log('Refreshing plans for child:', selectedChildId);
+      try {
+        const token = await getToken();
+        console.log('Got token for refresh:', token ? 'Yes' : 'No');
+        const data = await apiFetch(`/api/plans/child/${selectedChildId}`, { token }) as Plan[];
+        console.log('Refreshed plans from server:', data.length, 'plans');
+        setPlans(data);
+      } catch (error) {
+        console.error('Failed to refresh plans:', error);
+        // Keep the optimistically added plan if refresh fails
+      }
     }
+    
+    // Clear message after 3 seconds
+    setTimeout(() => setMessage(null), 3000);
   }
 
   function viewPlan(planId: string) {
@@ -122,11 +139,11 @@ export default function Plans() {
           </div>
           
           <Button
-            onClick={generate}
-            disabled={!selectedChildId || loading}
+            onClick={() => setShowCreateWizard(true)}
+            disabled={!selectedChildId}
             variant="filled"
             iconLeft={<MdAutoAwesome size={20} />}
-            text={loading ? 'Generating…' : 'Generate Weekly Plan'}
+            text="Create New Plan"
           />
         </div>
         
@@ -169,12 +186,15 @@ export default function Plans() {
             <p className="text-body-medium text-on-surface-variant mb-4">
               Generate your first learning plan to get started with personalized education.
             </p>
+            <p className="text-body-small text-on-surface-variant mb-4">
+              Debug: Plans array length: {plans.length}, Selected child: {selectedChildId}
+            </p>
             <Button 
               variant="outlined" 
               text="Create First Plan" 
               iconLeft={<MdAutoAwesome size={16} />}
               disabled={!selectedChildId}
-              onClick={generate}
+              onClick={() => setShowCreateWizard(true)}
             />
           </div>
         ) : (
@@ -206,6 +226,13 @@ export default function Plans() {
           </div>
         )}
       </Card>
+      
+      {/* Create Plan Wizard */}
+      <CreatePlanWizard
+        isOpen={showCreateWizard}
+        onClose={() => setShowCreateWizard(false)}
+        onPlanCreated={handlePlanCreated}
+      />
     </div>
   );
 }

@@ -3,6 +3,8 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { TopAppBar } from '../ui/components/top-app-bar/TopAppBar';
 import { NavigationDrawerIn } from '../ui/components/navigation-drawer/NavigationDrawerIn';
 import { MdDashboard, MdAssignment, MdTimeline, MdLibraryBooks, MdGroups, MdCalendarMonth, MdChat, MdPerson } from 'react-icons/md';
+import { UserProfile } from '../components/auth/UserProfile';
+import WundaraLogo from '../assets/wundara-logo.png';
 
 function isActive(pathname: string, href: string) {
   if (href === '/') return pathname === '/';
@@ -19,8 +21,7 @@ export default function AppShell() {
       <NavigationDrawerIn isVisible className="hidden md:flex">
         <div className="px-3 pb-6">
           <div className="flex items-center gap-2 px-2 py-3">
-            <img src="/logo.svg" alt="Wundara" className="h-6" />
-            <span className="text-title-large">Wundara</span>
+            <img src={WundaraLogo} alt="Wundara" className="h-12 w-auto max-w-full" />
           </div>
         </div>
         <NavigationDrawerIn.Item
@@ -76,7 +77,11 @@ export default function AppShell() {
       {/* Main area */}
       <div className="flex min-w-0 flex-1 flex-col">
         <TopAppBar>
-          <TopAppBar.Small title="Wundara" />
+          <TopAppBar.Small>
+            <div className="ml-auto">
+              <UserProfile />
+            </div>
+          </TopAppBar.Small>
         </TopAppBar>
         <main className="flex-1 overflow-auto p-4 md:p-6">
           <div className="mx-auto max-w-7xl">

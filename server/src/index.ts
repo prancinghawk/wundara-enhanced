@@ -1,5 +1,6 @@
 import express from "express";
 import cors from "cors";
+import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 import { env } from "./config/env";
 import { childrenRouter } from "./routes/children";
 import { plansRouter } from "./routes/plans";

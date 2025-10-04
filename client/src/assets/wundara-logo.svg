@@ -1,0 +1,38 @@
+<svg width="1000" height="300" viewBox="0 0 1000 300" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main text "wundara" in italic serif -->
+  <text x="20" y="200" font-family="Georgia, Times, serif" font-size="120" font-weight="400" fill="#000000" font-style="italic">wundara</text>
+  
+  <!-- Decorative diamond stars on the right -->
+  <!-- Large diamond -->
+  <path d="M850 100 L880 130 L850 160 L820 130 Z" fill="url(#gradient1)"/>
+  
+  <!-- Medium diamond -->
+  <path d="M900 60 L920 80 L900 100 L880 80 Z" fill="url(#gradient2)"/>
+  
+  <!-- Small diamond -->
+  <path d="M920 170 L935 185 L920 200 L905 185 Z" fill="url(#gradient3)"/>
+  
+  <!-- Additional small diamond -->
+  <path d="M950 120 L960 130 L950 140 L940 130 Z" fill="url(#gradient4)"/>
+  
+  <!-- Gradients for turquoise to purple -->
+  <defs>
+    <linearGradient id="gradient1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#20B2AA;stop-opacity:1" />
+      <stop offset="50%" style="stop-color:#4169E1;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8A2BE2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradient2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#48D1CC;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#9370DB;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradient3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#40E0D0;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#8A2BE2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="gradient4" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#20B2AA;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#6A5ACD;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+</svg>

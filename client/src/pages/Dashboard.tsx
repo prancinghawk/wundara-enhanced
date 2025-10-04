@@ -306,7 +306,7 @@ export default function Dashboard() {
           <Card className="p-6">
             <div className="mb-4 flex items-center gap-2">
               <MdGroup size={20} className="text-on-surface-variant" />
-              <h3 className="text-title-medium">Wundara Community</h3>
+              <h3 className="text-title-medium">Community</h3>
             </div>
             <div className="space-y-3">
               <div className="rounded-lg bg-surface-container p-3">
@@ -333,7 +333,7 @@ export default function Dashboard() {
             <div>
               <h3 className="text-title-medium">AI Chat</h3>
               <p className="text-body-small text-on-surface-variant">
-                Start a conversation with Wundara's AI educational companion
+                Start a conversation with your AI educational companion
               </p>
             </div>
           </div>

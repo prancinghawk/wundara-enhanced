@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import WundaraThemeProvider from './theme/ThemeProvider';
+import { AuthProvider } from './components/auth/AuthProvider';
 
 console.log('🚀 Main.tsx is executing');
 
@@ -14,11 +15,13 @@ if (rootElement) {
   try {
     ReactDOM.createRoot(rootElement).render(
       <React.StrictMode>
-        <WundaraThemeProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </WundaraThemeProvider>
+        <AuthProvider>
+          <WundaraThemeProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </WundaraThemeProvider>
+        </AuthProvider>
       </React.StrictMode>
     );
     console.log('✅ React app rendered successfully');
@@ -28,7 +31,7 @@ if (rootElement) {
     rootElement.innerHTML = `
       <div style="padding: 20px; font-family: Arial, sans-serif;">
         <h1 style="color: #dc2626;">⚠️ App Loading Error</h1>
-        <p>There was an error loading the Wundara app.</p>
+        <p>There was an error loading the app.</p>
         <pre style="background: #f3f4f6; padding: 10px; border-radius: 4px;">${error}</pre>
       </div>
     `;
