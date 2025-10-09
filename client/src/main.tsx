@@ -1,12 +1,14 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
+import { ClerkProvider } from '@clerk/clerk-react';
 import './index.css';
 import App from './App';
 import WundaraThemeProvider from './theme/ThemeProvider';
-import { AuthProvider } from './components/auth/AuthProvider';
 
 console.log('🚀 Main.tsx is executing');
+
+const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
 const rootElement = document.getElementById('root');
 console.log('📍 Root element:', rootElement);
@@ -15,13 +17,13 @@ if (rootElement) {
   try {
     ReactDOM.createRoot(rootElement).render(
       <React.StrictMode>
-        <AuthProvider>
+        <ClerkProvider publishableKey={CLERK_PUBLISHABLE_KEY}>
           <WundaraThemeProvider>
             <BrowserRouter>
               <App />
             </BrowserRouter>
           </WundaraThemeProvider>
-        </AuthProvider>
+        </ClerkProvider>
       </React.StrictMode>
     );
     console.log('✅ React app rendered successfully');
