@@ -35,7 +35,7 @@ export default defineConfig(({ mode }) => {
     },
     build: {
       rollupOptions: {
-        external: ['next/navigation', 'next/headers'],
+        // Don't externalize - we provide shims for these
       },
     },
     server: {
