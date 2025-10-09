@@ -16,12 +16,7 @@ const app = express();
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
 
-// Apply Clerk auth middleware globally for production
-if (env.NODE_ENV !== "development") {
-  app.use(ClerkExpressRequireAuth());
-  app.use(ensureUserExists);
-}
-
+// Health check endpoint (no auth required)
 app.get("/health", (_req, res) => res.json({ status: "ok", service: "wundara-server" }));
 
 // Route selection based on environment
