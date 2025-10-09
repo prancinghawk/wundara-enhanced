@@ -2,7 +2,7 @@ import { Request, Response, NextFunction } from "express";
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
 import { env } from "../config/env";
 import { db } from "../config/db";
-import { users } from "../../drizzle/schema";
+import { users } from "./drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export interface AuthedRequest extends Request {

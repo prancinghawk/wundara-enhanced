@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import { db } from "../config/db";
-import { users } from "../../drizzle/schema";
+import { users } from "./drizzle/schema";
 import { eq } from "drizzle-orm";
 
 /**

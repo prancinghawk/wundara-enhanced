@@ -1,7 +1,7 @@
 import { Router } from "express";
 import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 import { db } from "../config/db";
-import { children, users } from "../../drizzle/schema";
+import { children, users } from "./drizzle/schema";
 import { eq } from "drizzle-orm";
 
 export const mockChildrenRouter = Router();
