@@ -34,7 +34,7 @@ if (env.NODE_ENV === "development") {
   } else {
     console.log("🔧 Running in development mode with mock data");
     app.use("/api/children", mockChildrenRouter);
-    app.use("/api/plans", mockPlansRouter);
+    app.use("/api/plans", devPlansRouter);
   }
 } else {
   app.use("/api/children", childrenRouter);
