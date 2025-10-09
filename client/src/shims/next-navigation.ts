@@ -24,6 +24,16 @@ export function useSearchParams() {
   return useRouterSearchParams();
 }
 
-export function redirect(url: string) {
+export function redirect(url: string): never {
   window.location.href = url;
+  throw new Error('REDIRECT');
+}
+
+export function notFound(): never {
+  throw new Error('NOT_FOUND');
+}
+
+export enum RedirectType {
+  push = 'push',
+  replace = 'replace',
 }

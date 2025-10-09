@@ -1,7 +1,33 @@
-import { defineConfig, loadEnv } from 'vite';
+import { defineConfig, loadEnv, Plugin } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'path';
 import { z } from 'zod';
+
+// Plugin to resolve Next.js imports to our shims
+function nextJsShimsPlugin(): Plugin {
+  return {
+    name: 'nextjs-shims',
+    enforce: 'pre',
+    resolveId(id) {
+      if (id === 'next/navigation') {
+        return path.resolve(__dirname, './src/shims/next-navigation.ts');
+      }
+      if (id === 'next/headers') {
+        return path.resolve(__dirname, './src/shims/next-headers.ts');
+      }
+      if (id === 'next/link') {
+        return path.resolve(__dirname, './src/shims/next-link.tsx');
+      }
+      if (id === 'next/router') {
+        return path.resolve(__dirname, './src/shims/next-router.ts');
+      }
+      if (id === 'next/image') {
+        return path.resolve(__dirname, './src/shims/next-image.tsx');
+      }
+      return null;
+    },
+  };
+}
 
 // https://vitejs.dev/config/
 export default defineConfig(({ mode }) => {
@@ -20,7 +46,7 @@ export default defineConfig(({ mode }) => {
   }
 
   return {
-    plugins: [react()],
+    plugins: [nextJsShimsPlugin(), react()],
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
