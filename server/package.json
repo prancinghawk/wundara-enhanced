@@ -5,7 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "prebuild": "test -d src/drizzle || cp -r drizzle src/ || echo 'drizzle folder exists'",
+    "postinstall": "test -d src/drizzle || (mkdir -p src/drizzle && cp drizzle/schema.* src/drizzle/ 2>/dev/null) || echo 'drizzle setup'",
     "build": "tsc -p tsconfig.json",
     "start": "node dist/index.js",
     "migrate": "drizzle-kit push:pg",
