@@ -4,7 +4,11 @@
     "module": "CommonJS",
     "moduleResolution": "node",
     "outDir": "dist",
-    "rootDir": ".",
+    "rootDir": "src",
+    "baseUrl": ".",
+    "paths": {
+      "../../drizzle/*": ["drizzle/*"]
+    },
     "strict": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true,
