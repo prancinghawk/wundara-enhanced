@@ -10,7 +10,9 @@ const EnvSchema = z.object({
   CLERK_PUBLISHABLE_KEY: z.string().min(1),
   CLERK_SECRET_KEY: z.string().min(1),
   ANTHROPIC_API_KEY: z.string().min(1),
-  ANTHROPIC_MODEL: z.string().default("claude-3-5-sonnet-20240620"),
+  // Updated to Claude 3.5 Sonnet (latest version as of Oct 2024)
+  // Alternative: "claude-3-5-haiku-20241022" for faster/cheaper responses
+  ANTHROPIC_MODEL: z.string().default("claude-3-5-sonnet-20241022"),
 });
 
 export const env = EnvSchema.parse(process.env);

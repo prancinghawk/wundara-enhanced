@@ -8,11 +8,19 @@ import { progressRouter } from "./routes/progress";
 import { mockChildrenRouter } from "./routes/mock-children";
 import { mockPlansRouter } from "./routes/mock-plans";
 import { devPlansRouter } from "./routes/dev-plans";
+import { educatorPlansRouter } from "./routes/educator-plans";
 import { debugApiConfiguration, getApiIntegrationStatus } from "./utils/debug-api";
+import { ensureUserExists } from "./middleware/ensureUser";
 
 const app = express();
 app.use(cors());
 app.use(express.json({ limit: "1mb" }));
+
+// Apply Clerk auth middleware globally for production
+if (env.NODE_ENV !== "development") {
+  app.use(ClerkExpressRequireAuth());
+  app.use(ensureUserExists);
+}
 
 app.get("/health", (_req, res) => res.json({ status: "ok", service: "wundara-server" }));
 
@@ -35,14 +43,18 @@ if (env.NODE_ENV === "development") {
 
 app.use("/api/progress", progressRouter);
 
+// Educator routes (always available)
+app.use("/api/educator-plans", educatorPlansRouter);
+
 // Error handler
-app.use((err: any, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
+app.use((err: any, _req: any, res: any, _next: any) => {
   console.error(err);
   res.status(500).json({ error: "Internal Server Error" });
 });
 
-app.listen(Number(env.PORT), () => {
-  console.log(`Wundara server running on http://localhost:${env.PORT}`);
+const PORT = Number(env.PORT) || 3001;
+app.listen(PORT, () => {
+  console.log(`Wundara server running on http://localhost:${PORT}`);
   
   // Debug API configuration on startup
   debugApiConfiguration();

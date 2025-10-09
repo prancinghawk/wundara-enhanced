@@ -27,9 +27,12 @@ interface CreatePlanWizardProps {
   isOpen: boolean;
   onClose: () => void;
   onPlanCreated: (plan: any) => void;
+  planType?: 'individual' | 'classroom';
+  isEducator?: boolean;
+  classroomData?: any;
 }
 
-export function CreatePlanWizard({ isOpen, onClose, onPlanCreated }: CreatePlanWizardProps) {
+export function CreatePlanWizard({ isOpen, onClose, onPlanCreated, planType = 'individual', isEducator = false, classroomData }: CreatePlanWizardProps) {
   const { getToken } = useAuth();
   const [children, setChildren] = useState<Child[]>([]);
   const [loading, setLoading] = useState(false);
@@ -135,8 +138,8 @@ export function CreatePlanWizard({ isOpen, onClose, onPlanCreated }: CreatePlanW
   }
 
   async function handleSubmit() {
-    if (!formData.childId) {
-      console.error('No child selected!');
+    if (planType === 'individual' && !formData.childId) {
+      console.error('No child selected for individual plan!');
       return;
     }
     
@@ -145,30 +148,93 @@ export function CreatePlanWizard({ isOpen, onClose, onPlanCreated }: CreatePlanW
       return;
     }
     
-    console.log('Generating plan for child:', formData.childId);
-    console.log('Selected child from children array:', children.find(c => c.id === formData.childId));
-    
     setLoading(true);
     try {
       const token = await getToken();
-      console.log('Making API call to:', `/api/plans/generate/${formData.childId}`);
-      const plan = await apiFetch(`/api/plans/generate/${formData.childId}`, {
-        method: 'POST',
-        body: {
-          context: {
-            learningTheme: formData.learningTheme,
-            focusAreas: formData.focusAreas,
-            materialAccess: formData.materialAccess,
-            learningStyles: formData.learningStyles,
-            energyLevel: formData.energyLevel,
-            specialNotes: formData.specialNotes
-          }
-        },
-        token
-      });
       
-      console.log('Plan generated successfully:', plan);
-      onPlanCreated(plan);
+      if (planType === 'classroom' && isEducator) {
+        // Generate classroom plan using educator API
+        console.log('🏫 Generating classroom plan...');
+        console.log('📊 Classroom data:', classroomData);
+        console.log('📝 Form data:', formData);
+        
+        const requestBody = {
+          classroomName: classroomData?.classroomName || formData.learningTheme || 'My Classroom',
+          educatorName: classroomData?.educatorName || 'Educator',
+          yearLevel: classroomData?.yearLevel || 'Year 3',
+          state: classroomData?.state || 'NSW',
+          subject: formData.focusAreas[0] || 'English',
+          lessonDuration: 60,
+          students: classroomData?.students || [
+            // Fallback students if no classroom data
+            {
+              id: '1',
+              firstName: 'Student 1',
+              ageYears: 8,
+              neurotype: 'Autism',
+              strengths: ['Visual learning', 'Pattern recognition'],
+              challenges: ['Social interaction', 'Transitions'],
+              interests: ['Animals', 'Building'],
+              sensoryNeeds: ['Quiet spaces', 'Fidget tools'],
+              communicationStyle: 'Visual supports',
+              learningPreferences: ['Hands-on', 'Visual'],
+              accommodations: ['Extra time', 'Visual schedule']
+            },
+            {
+              id: '2',
+              firstName: 'Student 2',
+              ageYears: 8,
+              neurotype: 'ADHD',
+              strengths: ['Creative thinking', 'Energy'],
+              challenges: ['Attention', 'Organization'],
+              interests: ['Sports', 'Music'],
+              sensoryNeeds: ['Movement breaks', 'Fidgets'],
+              communicationStyle: 'Verbal',
+              learningPreferences: ['Kinesthetic', 'Auditory'],
+              accommodations: ['Movement breaks', 'Clear structure']
+            }
+          ],
+          learningObjectives: [
+            'Students will engage with curriculum content through their interests',
+            'Students will demonstrate learning through multiple modalities'
+          ],
+          availableResources: formData.materialAccess,
+          classroomLayout: classroomData?.classroomLayout || 'Flexible seating with quiet corners',
+          specialConsiderations: formData.specialNotes || 'Neurodiversity-affirming environment'
+        };
+        
+        console.log('📤 Request body:', JSON.stringify(requestBody, null, 2));
+        
+        const classroomPlan = await apiFetch('/api/educator-plans/generate', {
+          method: 'POST',
+          body: requestBody,
+          token
+        });
+        
+        console.log('Classroom plan generated successfully:', classroomPlan);
+        onPlanCreated((classroomPlan as any).plan);
+      } else {
+        // Generate individual plan using regular API
+        console.log('Generating individual plan for child:', formData.childId);
+        const plan = await apiFetch(`/api/plans/generate/${formData.childId}`, {
+          method: 'POST',
+          body: {
+            context: {
+              learningTheme: formData.learningTheme,
+              focusAreas: formData.focusAreas,
+              materialAccess: formData.materialAccess,
+              learningStyles: formData.learningStyles,
+              energyLevel: formData.energyLevel,
+              specialNotes: formData.specialNotes
+            }
+          },
+          token
+        });
+        
+        console.log('Individual plan generated successfully:', plan);
+        onPlanCreated(plan);
+      }
+      
       onClose();
     } catch (error) {
       console.error('Failed to generate plan:', error);
@@ -196,9 +262,25 @@ export function CreatePlanWizard({ isOpen, onClose, onPlanCreated }: CreatePlanW
           </div>
 
           <div className="space-y-6">
-            {/* Select Child */}
-            <div>
-              <h3 className="text-title-medium mb-3">Select Child</h3>
+            {/* Plan Type Indicator */}
+            {isEducator && (
+              <div className="p-4 bg-purple-50 rounded-lg border border-purple-200">
+                <h3 className="text-title-medium text-purple-800 mb-2">
+                  {planType === 'classroom' ? '🏫 Classroom Plan' : '👤 Individual Student Plan'}
+                </h3>
+                <p className="text-body-medium text-purple-700">
+                  {planType === 'classroom' 
+                    ? 'Creating a comprehensive plan for your entire classroom with differentiation strategies.'
+                    : 'Creating a personalized plan for one student with special accommodations.'
+                  }
+                </p>
+              </div>
+            )}
+
+            {/* Select Child - only show for individual plans */}
+            {planType === 'individual' && (
+              <div>
+                <h3 className="text-title-medium mb-3">{isEducator ? 'Select Student' : 'Select Child'}</h3>
               <div className="grid gap-3">
                 {children.map(child => (
                   <div
@@ -224,18 +306,29 @@ export function CreatePlanWizard({ isOpen, onClose, onPlanCreated }: CreatePlanW
                   </div>
                 ))}
               </div>
-            </div>
+              </div>
+            )}
 
             {/* Learning Theme */}
             <div>
-              <label className="block text-title-medium mb-2">Learning Theme</label>
+              <label className="block text-title-medium mb-2">
+                {planType === 'classroom' ? 'Classroom Name / Theme' : 'Learning Theme'}
+              </label>
               <input
                 type="text"
-                placeholder="e.g., Ocean Animals, Space Exploration, Dinosaurs"
+                placeholder={planType === 'classroom' 
+                  ? "e.g., Room 3B, The Explorer's Classroom, Creative Minds"
+                  : "e.g., Ocean Animals, Space Exploration, Dinosaurs"
+                }
                 className="w-full p-3 border border-outline rounded-lg focus:border-primary focus:outline-none"
                 value={formData.learningTheme}
                 onChange={(e) => setFormData(prev => ({ ...prev, learningTheme: e.target.value }))}
               />
+              {planType === 'classroom' && (
+                <p className="text-body-small text-on-surface-variant mt-1">
+                  This will be used as your classroom identifier and can include a thematic name.
+                </p>
+              )}
             </div>
 
             {/* Focus Areas */}
@@ -347,7 +440,7 @@ export function CreatePlanWizard({ isOpen, onClose, onPlanCreated }: CreatePlanW
               text={loading ? "Creating Plan..." : "Create Plan"}
               iconLeft={loading ? undefined : <MdCheck size={16} />}
               onClick={handleSubmit}
-              disabled={loading || !formData.childId}
+              disabled={loading || (planType === 'individual' && !formData.childId)}
             />
           </div>
         </div>

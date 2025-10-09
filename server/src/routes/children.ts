@@ -10,17 +10,32 @@ export const childrenRouter = Router();
 childrenRouter.post("/", requireAuth, async (req: AuthedRequest, res) => {
   const userId = getUserId(req);
   const { firstName, ageYears, neurotype, interests, learningContext, state } = req.body ?? {};
+  
+  console.log('📝 Creating child profile:', {
+    userId,
+    firstName,
+    ageYears,
+    neurotype: neurotype?.substring(0, 50),
+    interests: interests?.substring(0, 50),
+    learningContext,
+    state
+  });
+  
   const [inserted] = await db
     .insert(children)
     .values({ userId, firstName, ageYears, neurotype, interests, learningContext, state })
     .returning();
+    
+  console.log('✅ Child profile created with ID:', inserted.id);
   res.status(201).json(inserted);
 });
 
 // List children for user
 childrenRouter.get("/", requireAuth, async (req: AuthedRequest, res) => {
   const userId = getUserId(req);
+  console.log('📋 Fetching children for user:', userId);
   const rows = await db.select().from(children).where(eq(children.userId, userId));
+  console.log('✅ Found', rows.length, 'children');
   res.json(rows);
 });
 

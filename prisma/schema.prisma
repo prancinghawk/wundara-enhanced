@@ -1,0 +1,118 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model ClassroomPlan {
+  id                String   @id @default(cuid())
+  classroomName     String
+  educatorName      String
+  yearLevel         String
+  state             String
+  subject           String
+  
+  // Store full markdown content from AI generation
+  markdownContent   String   @db.Text
+  
+  // Store structured metadata as JSON (parsed from markdown)
+  metadata          Json     // Contains: { days, weekOverview, classTheme, etc. }
+  
+  // Student associations (array of student IDs)
+  studentIds        String[]
+  
+  // Lesson configuration
+  lessonDuration    Int      @default(60) // minutes
+  totalDuration     Int?     // calculated total
+  
+  // Theme and context
+  classTheme        Json?    // { title, description, studentConnections }
+  learningObjectives String[]
+  availableResources String[]
+  classroomLayout   String?
+  specialConsiderations String?
+  
+  // Timestamps
+  generatedAt       DateTime @default(now())
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("classroom_plans")
+}
+
+model ClassroomConfiguration {
+  id                    String   @id @default(cuid())
+  configId              String   @unique // educator-classroom composite key
+  classroomName         String
+  educatorName          String
+  yearLevel             String
+  state                 String
+  
+  // Student profiles stored as JSON array
+  students              Json     // Array of student objects with profiles
+  
+  // Classroom setup
+  availableResources    String[]
+  classroomLayout       String
+  specialConsiderations String?
+  
+  // Usage tracking
+  lastUsed              DateTime @default(now())
+  planCount             Int      @default(0) // number of plans generated
+  
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  
+  @@map("classroom_configurations")
+}
+
+model HomeschoolPlan {
+  id                String   @id @default(cuid())
+  childId           String
+  childName         String
+  
+  // Plan content
+  planJson          Json     // Original structured plan data
+  markdownContent   String?  @db.Text // If we add markdown for homeschool too
+  
+  // Plan metadata
+  theme             String?
+  focusAreas        String[]
+  materialAccess    String[]
+  learningStyles    String[]
+  energyLevel       String?
+  
+  // Timestamps
+  weekOf            DateTime
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("homeschool_plans")
+}
+
+model Child {
+  id                String   @id @default(cuid())
+  userId            String   // Clerk user ID
+  firstName         String
+  ageYears          Int
+  neurotype         String
+  strengths         String
+  challenges        String
+  interests         String
+  sensoryNeeds      String
+  communicationStyle String
+  learningPreferences String
+  accommodations    String
+  specialNotes      String?
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  @@map("children")
+}

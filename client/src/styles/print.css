@@ -1,0 +1,244 @@
+/* Print-friendly styles for learning plans */
+
+@media print {
+  /* Hide non-essential elements */
+  .no-print,
+  .export-buttons,
+  nav,
+  .navigation,
+  .sidebar,
+  .header-actions,
+  .back-button,
+  .print-hide {
+    display: none !important;
+  }
+
+  /* Page setup */
+  @page {
+    margin: 0.5in;
+    size: A4;
+  }
+
+  body {
+    font-size: 12pt;
+    line-height: 1.4;
+    color: #000;
+    background: white;
+  }
+
+  /* Typography */
+  h1 {
+    font-size: 18pt;
+    margin-bottom: 12pt;
+    page-break-after: avoid;
+    color: #000;
+  }
+
+  h2 {
+    font-size: 16pt;
+    margin-top: 18pt;
+    margin-bottom: 8pt;
+    page-break-after: avoid;
+    color: #000;
+  }
+
+  h3 {
+    font-size: 14pt;
+    margin-top: 12pt;
+    margin-bottom: 6pt;
+    page-break-after: avoid;
+    color: #000;
+  }
+
+  /* Plan content */
+  .plan-content {
+    max-width: none;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* Cards and containers */
+  .card,
+  .activity-card,
+  .day-card {
+    border: 1px solid #ddd;
+    margin-bottom: 12pt;
+    padding: 8pt;
+    page-break-inside: avoid;
+    background: white;
+    box-shadow: none;
+  }
+
+  /* Activity sections */
+  .activity {
+    border-left: 3pt solid #2563eb;
+    padding-left: 8pt;
+    margin: 8pt 0;
+    page-break-inside: avoid;
+  }
+
+  .activity-title {
+    font-weight: bold;
+    margin-bottom: 4pt;
+  }
+
+  .curriculum-codes {
+    font-style: italic;
+    color: #666;
+    margin-bottom: 4pt;
+  }
+
+  .materials-list,
+  .steps-list {
+    margin: 4pt 0;
+    padding-left: 12pt;
+  }
+
+  .materials-list li,
+  .steps-list li {
+    margin-bottom: 2pt;
+  }
+
+  /* Special sections */
+  .declarative-language {
+    background: #f0f9ff;
+    border-left: 3pt solid #0ea5e9;
+    padding: 6pt;
+    margin: 6pt 0;
+    font-style: italic;
+  }
+
+  .adult-support {
+    background: #fefce8;
+    border-left: 3pt solid #eab308;
+    padding: 6pt;
+    margin: 6pt 0;
+  }
+
+  .week-overview {
+    border: 1pt solid #ddd;
+    padding: 8pt;
+    margin-top: 12pt;
+    page-break-inside: avoid;
+  }
+
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 8pt 0;
+  }
+
+  th, td {
+    border: 1pt solid #ddd;
+    padding: 4pt;
+    text-align: left;
+  }
+
+  th {
+    background: #f5f5f5;
+    font-weight: bold;
+  }
+
+  /* Links */
+  a {
+    color: #000;
+    text-decoration: underline;
+  }
+
+  a[href]:after {
+    content: " (" attr(href) ")";
+    font-size: 10pt;
+    color: #666;
+  }
+
+  /* Page breaks */
+  .page-break {
+    page-break-before: always;
+  }
+
+  .day-section {
+    page-break-inside: avoid;
+    margin-bottom: 18pt;
+  }
+
+  /* Ensure good breaks */
+  h1, h2, h3 {
+    page-break-after: avoid;
+  }
+
+  .activity-card {
+    page-break-inside: avoid;
+  }
+
+  /* Footer for each page */
+  .print-footer {
+    position: fixed;
+    bottom: 0.3in;
+    left: 0;
+    right: 0;
+    text-align: center;
+    font-size: 10pt;
+    color: #666;
+    border-top: 1pt solid #ddd;
+    padding-top: 4pt;
+  }
+
+  /* Hide interactive elements */
+  button,
+  .button,
+  .btn,
+  input,
+  select,
+  textarea,
+  .interactive {
+    display: none !important;
+  }
+
+  /* Ensure emojis print well */
+  .emoji {
+    font-family: "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif;
+  }
+
+  /* Day headers */
+  .day-header {
+    background: #f8fafc;
+    border: 1pt solid #e2e8f0;
+    padding: 8pt;
+    margin: 12pt 0 6pt 0;
+    font-weight: bold;
+  }
+
+  /* Activity numbering */
+  .activity-number {
+    background: #2563eb;
+    color: white;
+    border-radius: 50%;
+    width: 20pt;
+    height: 20pt;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-right: 6pt;
+  }
+
+  /* Compact spacing for print */
+  .print-compact {
+    margin: 2pt 0;
+    padding: 2pt 0;
+  }
+
+  /* Two-column layout for some sections */
+  .print-two-column {
+    column-count: 2;
+    column-gap: 12pt;
+    column-rule: 1pt solid #ddd;
+  }
+
+  /* Ensure colors are print-friendly */
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+}

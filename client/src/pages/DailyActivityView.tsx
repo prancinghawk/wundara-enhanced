@@ -5,7 +5,9 @@ import { Button } from '../ui/components/button/common-button/Button';
 import { MdArrowBack, MdHome, MdPrint, MdSchedule, MdCheckCircle, MdExpandMore, MdExpandLess } from 'react-icons/md';
 import { apiFetch } from '../services/api';
 import { getCurriculumDescription } from '../utils/curriculumLibrary';
+import { ExportButton } from '../components/ExportButton';
 import { useAuth } from '@clerk/clerk-react';
+import '../styles/print.css';
 
 interface Activity {
   title: string;
@@ -251,6 +253,10 @@ export default function DailyActivityView() {
           />
         </div>
         <div className="flex gap-2">
+          <ExportButton
+            markdownContent={plan.planJson?.raw || '# Daily Activity\n\nNo markdown content available.'}
+            planTitle={`Day ${dayIndexNum + 1}: ${currentDay.activities[0]?.title || currentDay.dayName}`}
+          />
           <Button
             variant="outlined"
             iconLeft={<MdHome size={16} />}

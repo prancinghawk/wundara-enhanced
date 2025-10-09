@@ -19,11 +19,11 @@ plansRouter.post("/generate/:childId", requireAuth, async (req: AuthedRequest, r
 
     const ai = await generateWeeklyPlan({ child: {
       firstName: child.firstName,
-      ageYears: child.ageYears,
-      neurotype: child.neurotype,
-      interests: child.interests,
+      ageYears: child.ageYears ?? undefined,
+      neurotype: child.neurotype ?? undefined,
+      interests: child.interests ?? undefined,
       learningContext: (child.learningContext as any) ?? "homeschool",
-      state: child.state,
+      state: child.state ?? undefined,
     }});
 
     // Use structured data if available, otherwise fallback to raw content
@@ -31,9 +31,15 @@ plansRouter.post("/generate/:childId", requireAuth, async (req: AuthedRequest, r
     const overview = ai.planData?.overview ?? "AI-generated learning plan";
     const planJson = ai.planData ? { structured: ai.planData, raw: ai.content } : { raw: ai.content };
 
+    // Log if we're storing unstructured data
+    if (!ai.planData) {
+      console.warn('⚠️ Storing plan without structured data. Raw content length:', ai.content.length);
+      console.warn('🔍 This plan may not display correctly in the UI');
+    }
+
     const [plan] = await db.insert(learningPlans).values({
       childId: child.id,
-      weekOf: new Date(),
+      weekOf: new Date().toISOString().split('T')[0], // Convert to YYYY-MM-DD format
       themeTitle,
       overview,
       planJson,

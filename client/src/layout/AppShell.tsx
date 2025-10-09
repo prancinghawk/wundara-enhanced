@@ -1,8 +1,10 @@
 import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { NavigationDrawerIn } from '../ui/components/navigation-drawer/NavigationDrawerIn';
-import { MdDashboard, MdAssignment, MdTimeline, MdLibraryBooks, MdGroups, MdCalendarMonth, MdChat, MdPerson } from 'react-icons/md';
+import { MdDashboard, MdAssignment, MdTimeline, MdLibraryBooks, MdGroups, MdCalendarMonth, MdChat, MdPerson, MdSchool } from 'react-icons/md';
 import { UserProfile } from '../components/auth/UserProfile';
+import { useUser } from '@clerk/clerk-react';
+import AccountTypeDebugger from '../components/AccountTypeDebugger';
 import WundaraLogo from '../assets/wundara-logo.png';
 
 function isActive(pathname: string, href: string) {
@@ -13,6 +15,14 @@ function isActive(pathname: string, href: string) {
 export default function AppShell() {
   const location = useLocation();
   const pathname = location.pathname;
+  const { user } = useUser();
+  
+  // Get account type from user metadata (check both public and unsafe metadata, and localStorage fallback)
+  const accountType = (
+    user?.publicMetadata?.accountType || 
+    user?.unsafeMetadata?.accountType || 
+    localStorage.getItem('debug_accountType')
+  ) as 'homeschool' | 'classroom' | undefined;
 
   return (
     <div className="flex h-screen bg-surface-container-low">
@@ -43,8 +53,8 @@ export default function AppShell() {
         />
         <NavigationDrawerIn.Item
           url="/profiles"
-          leftElement={<MdPerson size={20} />}
-          label="Child Profiles"
+          leftElement={accountType === 'classroom' ? <MdSchool size={20} /> : <MdPerson size={20} />}
+          label={accountType === 'classroom' ? "Classroom Profiles" : "Child Profiles"}
           rightElement={isActive(pathname, '/profiles') ? '•' : undefined}
         />
         <NavigationDrawerIn.Item
@@ -88,6 +98,9 @@ export default function AppShell() {
           </div>
         </main>
       </div>
+      
+      {/* Debug component for account type switching */}
+      <AccountTypeDebugger />
     </div>
   );
 }

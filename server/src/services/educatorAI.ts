@@ -1,12 +1,13 @@
 import Anthropic from '@anthropic-ai/sdk';
 import { env } from '../config/env';
-import { getCurriculumContext } from './curriculumContext';
+import { curriculumContextService } from './curriculumContext';
+import { parseMarkdownPlan } from './markdownParser';
 
 const anthropic = new Anthropic({
   apiKey: env.ANTHROPIC_API_KEY,
 });
 
-interface ClassroomStudent {
+export interface ClassroomStudent {
   id: string;
   firstName: string;
   ageYears: number;
@@ -20,7 +21,7 @@ interface ClassroomStudent {
   accommodations: string[];
 }
 
-interface ClassroomPlanRequest {
+export interface ClassroomPlanRequest {
   classroomName: string;
   educatorName: string;
   yearLevel: string;
@@ -33,6 +34,19 @@ interface ClassroomPlanRequest {
   classroomLayout: string;
   specialConsiderations: string;
 }
+
+// Type aliases for route compatibility
+export type GenerateClassroomPlanInput = ClassroomPlanRequest;
+export interface ClassroomPlan {
+  id: string;
+  classroomName: string;
+  educatorName: string;
+  yearLevel: string;
+  state: string;
+  subject: string;
+  [key: string]: any;
+}
+
 
 // Helper function to find common interests and create a unifying theme
 function generateClassTheme(students: ClassroomStudent[]): { theme: string; rationale: string; connections: string[] } {
@@ -115,8 +129,22 @@ function generateClassTheme(students: ClassroomStudent[]): { theme: string; rati
 
 export async function generateClassroomPlan(request: ClassroomPlanRequest) {
   try {
+    console.log('🔑 Anthropic API Key configured:', !!env.ANTHROPIC_API_KEY);
+    console.log('📚 Request details:', {
+      classroomName: request.classroomName,
+      yearLevel: request.yearLevel,
+      subject: request.subject,
+      studentsCount: request.students?.length || 0
+    });
+
+    // Check if API key is configured
+    if (!env.ANTHROPIC_API_KEY) {
+      console.error('❌ ANTHROPIC_API_KEY is not configured');
+      throw new Error('ANTHROPIC_API_KEY environment variable is required but not set');
+    }
+    
     // Get curriculum context for the year level
-    const curriculumContext = await getCurriculumContext(request.subject, request.yearLevel);
+    const curriculumContext = curriculumContextService.getContextForYearLevel(request.yearLevel, request.subject);
     
     // Generate class theme based on student interests
     const classTheme = generateClassTheme(request.students);
@@ -146,7 +174,6 @@ CLASSROOM CONTEXT:
 - Year Level: ${request.yearLevel} (${request.state})
 - Subject: ${request.subject}
 - Duration: ${request.lessonDuration} minutes
-- Layout: ${request.classroomLayout}
 - Students: ${request.students.length} learners
 
 UNIFYING CLASS THEME: "${classTheme.theme}"
@@ -171,132 +198,107 @@ ${index + 1}. ${student.name} (${student.neurotype})
 LEARNING OBJECTIVES:
 ${request.learningObjectives.map((obj, index) => `${index + 1}. ${obj}`).join('\n')}
 
-AVAILABLE RESOURCES:
-${request.availableResources.join(', ')}
-
-SPECIAL CONSIDERATIONS:
-${request.specialConsiderations}
+AVAILABLE RESOURCES: ${request.availableResources.join(', ')}
+SPECIAL CONSIDERATIONS: ${request.specialConsiderations}
 
 CURRICULUM CONTEXT:
 ${curriculumContext}
 
-CORE PRINCIPLES:
-• Neurodiversity is natural human variation to be celebrated
-• Every student has unique strengths and contributions
-• Flexible approaches honor different learning styles and needs
-• Sensory needs are valid and must be accommodated
-• Choice and autonomy reduce anxiety and increase engagement
-• Success looks different for every learner - celebrate engagement over completion
-• The class theme "${classTheme.theme}" should weave through all activities
+---
 
-REQUIRED LESSON STRUCTURE:
-1. ENGAGING OPENER (5-10 minutes)
-   - Sensory-friendly warm-up incorporating the class theme
-   - Multiple entry points for different neurotypes
-   - Connection to student interests through the theme
+CREATE A COMPREHENSIVE WEEKLY LEARNING PLAN in MARKDOWN format, following this EXACT structure:
 
-2. MAIN LEARNING ACTIVITIES (${Math.floor(request.lessonDuration * 0.6)}-${Math.floor(request.lessonDuration * 0.7)} minutes)
-   - 3-4 activities with whole-class, small-group, and individual options
-   - Each activity must connect to "${classTheme.theme}"
-   - Visual, auditory, and kinesthetic pathways
-   - Choice-based elements for PDA support
-   - Clear connections to student interests
+# 🌿 [Creative Mission Title]
 
-3. SENSORY BREAKS (2-5 minutes each, built into activities)
-   - Movement and calming options
-   - Regulation opportunities
+**Inclusive Learning Plan | Year ${request.yearLevel} | ${request.state} | ${request.subject}**  
+**Theme**: [One sentence describing the adventure/mission]
 
-4. COLLABORATIVE COMPONENTS
-   - Peer learning celebrating differences
-   - Flexible participation levels
-   - Theme-based group work
+---
 
-5. WRAP-UP & REFLECTION (5-10 minutes)
-   - Multiple sharing methods
-   - Success celebration
-   - Theme connections
+## 🗓 Monday – **"[Daily Focus Name]"**
 
-DIFFERENTIATION REQUIREMENTS (for each activity):
-• Visual Learners: Graphic organizers, visual schedules, color coding, theme-related imagery
-• Auditory Learners: Discussion, music, verbal instructions, theme-related sounds/stories
-• Kinesthetic Learners: Movement, hands-on, fidgets, theme-related manipulatives
-• Low Demand (PDA-friendly): Choice-based, minimal pressure, collaborative language, theme exploration
-• High Support Needs: Step-by-step guides, visual supports, peer buddies, simplified theme connections
+---
 
-ASSESSMENT DIVERSITY:
-- Traditional written work
-- Verbal presentations/recordings
-- Visual projects (drawings, diagrams, models) - theme-related
-- Performance/demonstration
-- Portfolio collections
-- Peer teaching opportunities
+### 🧩 **1. [Activity Name]**
 
-EMERGENCY STRATEGIES:
-- Sensory overload protocols
-- Dysregulation support procedures
-- Flexible expectations and alternatives
-- Calm corner/break procedures
-- Communication breakdown support
+🎯 *[Curriculum Codes]*  
+🧠 *Objective*: [Clear learning objective]
 
-Generate a comprehensive JSON classroom plan that:
-1. Integrates the class theme "${classTheme.theme}" throughout ALL activities
-2. References specific student interests within the theme context
-3. Provides practical, implementable strategies
-4. Includes emergency protocols
-5. Celebrates neurodiversity while meeting curriculum standards
-6. Makes every student feel seen and valued through interest integration
+**Materials**: [comma-separated list]
 
-Return ONLY valid JSON in this exact structure:
-{
-  "id": "generated-plan-id",
-  "classroomName": "${request.classroomName}",
-  "educatorName": "${request.educatorName}",
-  "yearLevel": "${request.yearLevel}",
-  "subject": "${request.subject}",
-  "totalDuration": ${request.lessonDuration},
-  "classTheme": {
-    "title": "${classTheme.theme}",
-    "description": "Brief description of how this theme connects to student interests",
-    "studentConnections": ["List of how each student connects to the theme"]
-  },
-  "learningObjectives": ["Objectives that incorporate the theme"],
-  "activities": [
-    {
-      "title": "Activity name incorporating theme",
-      "duration": 15,
-      "type": "whole-class|small-group|individual|sensory-break|transition",
-      "description": "Description connecting to ${classTheme.theme} and student interests",
-      "instructions": "Step-by-step instructions with theme integration",
-      "materials": ["Materials list including theme-related items"],
-      "curriculumCodes": ["Relevant ACARA codes"],
-      "themeConnections": {
-        "overallConnection": "How this activity connects to the class theme",
-        "studentInterestLinks": ["Specific connections to individual student interests"]
-      },
-      "differentiationStrategies": {
-        "visual": ["Visual strategies incorporating theme"],
-        "auditory": ["Auditory strategies with theme elements"],
-        "kinesthetic": ["Hands-on strategies using theme"],
-        "lowDemand": ["PDA-friendly approaches with theme choice"],
-        "highSupport": ["High support strategies with theme scaffolding"]
-      },
-      "groupingStrategy": "How students are grouped for this activity",
-      "assessmentMethod": "How learning is assessed (multiple formats)",
-      "sensoryConsiderations": ["Sensory supports needed"],
-      "successCriteria": ["What success looks like for different learners"]
-    }
-  ],
-  "transitionStrategies": ["Strategies for moving between activities"],
-  "emergencyStrategies": ["Protocols for challenges"],
-  "reflectionPrompts": ["Questions for student reflection on theme and learning"],
-  "homeSchoolConnection": ["Ways families can extend theme learning at home"],
-  "inclusionNotes": ["Key points about celebrating neurodiversity in this lesson"],
-  "generatedAt": "${new Date().toISOString()}"
-}`;
+**Step-by-Step**:
+1. [First concrete action]
+2. [Second action]
+3. [Continue with 5-7 steps total]
 
+**Declarative Prompt**:  
+🌱 *"[Low-demand, curiosity-based prompt in quotes]"*
+
+**Adult Prep Tip**: [Neurodiversity consideration for educators]
+
+**[Optional] Outdoor Option**: [Alternative approach if applicable]
+
+---
+
+### 🧩 **2. [Second Activity Name]**
+
+[Follow same structure as activity 1]
+
+---
+
+[Continue with 3-4 activities per day]
+
+---
+
+## 🗓 Tuesday – **"[Daily Focus]"**
+
+[Repeat structure for Tuesday through Friday]
+
+---
+
+## 📋 Week Overview
+
+**Transition Strategies**:
+- [Strategy 1]
+- [Strategy 2]
+
+**Emergency Protocols**:
+- [Protocol 1]
+- [Protocol 2]
+
+**Reflection Prompts**:
+- [Question 1]
+- [Question 2]
+
+**Home-School Connection**:
+- [Activity 1 families can do]
+- [Activity 2]
+
+**Inclusion Notes**:
+- [Key neurodiversity-affirming practice]
+- [Another key practice]
+
+---
+
+CRITICAL FORMATTING RULES:
+1. Use emoji sparingly (only for section headers: 🌿 🗓 🧩 🎯 🧠 🌱 🗣)
+2. Bold key terms with **double asterisks**
+3. Use italics for *curriculum codes* and *objectives*
+4. Number all step-by-step instructions
+5. Include declarative prompts in quotes with emoji prefix
+6. Each activity must have: title, codes, objective, materials, steps, prompt, prep tip
+7. Weave "${classTheme.theme}" throughout all activities naturally
+8. Reference specific student names and interests where appropriate
+9. Make it practical, detailed, and immediately implementable
+
+OUTPUT ONLY THE MARKDOWN - NO JSON, NO EXPLANATORY TEXT BEFORE OR AFTER.`;
+
+    console.log('📝 Prompt length:', prompt.length, 'characters');
+    console.log('🎯 Calling Anthropic API...');
+    
     const response = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
-      max_tokens: 4000,
+      model: env.ANTHROPIC_MODEL, // Use configured model
+      max_tokens: 4096,
       messages: [
         {
           role: 'user',
@@ -305,26 +307,91 @@ Return ONLY valid JSON in this exact structure:
       ]
     });
 
+    console.log('✅ Anthropic API response received');
+    console.log('📊 Response type:', response.content[0]?.type);
+    
     const content = response.content[0];
     if (content.type !== 'text') {
+      console.error('❌ Unexpected response type:', content.type);
       throw new Error('Unexpected response type from Anthropic');
     }
 
-    // Parse the JSON response
-    const planData = JSON.parse(content.text);
+    const markdownContent = content.text.trim();
+    console.log('📄 Markdown content length:', markdownContent.length, 'characters');
+    console.log('📄 Markdown preview (first 200 chars):', markdownContent.substring(0, 200));
     
-    // Add generated ID if not present
-    if (!planData.id) {
-      planData.id = `classroom-plan-${Date.now()}`;
-    }
+    // Parse the markdown into structured data
+    console.log('🔄 Parsing markdown to structured data...');
+    const parsedData = parseMarkdownPlan(markdownContent);
+    console.log('✅ Markdown parsed successfully');
+    console.log('📊 Parsed data keys:', Object.keys(parsedData));
+    console.log('📊 Days count:', parsedData.days?.length || 0);
+    
+    // Convert parsed data to match the expected format for UI compatibility
+    const days = parsedData.days.map((day, index) => ({
+      dayIndex: index,
+      dayName: day.day,
+      dayFocus: day.focus,
+      activities: day.activities.map(activity => ({
+        title: activity.title,
+        objective: activity.objective,
+        curriculumCodes: activity.curriculumCodes,
+        materials: activity.materials,
+        instructions: activity.steps.join('\n'),
+        declarativeLanguage: activity.declarativePrompts.join(' '),
+        adultSupport: activity.adultPrepTip || '',
+        outdoorOption: activity.outdoorOption || '',
+        estimatedDuration: activity.duration ? `${activity.duration} minutes` : '30 minutes'
+      }))
+    }));
+    
+    // Create the combined result with both formats
+    const plan = {
+      id: `classroom-plan-${Date.now()}`,
+      classroomName: request.classroomName,
+      educatorName: request.educatorName,
+      yearLevel: request.yearLevel,
+      state: request.state,
+      subject: request.subject,
+      totalDuration: request.lessonDuration,
+      
+      // Store both formats
+      markdownContent,
+      metadata: parsedData,
+      
+      // UI compatibility structure
+      classTheme: {
+        title: classTheme.theme,
+        description: classTheme.rationale,
+        studentConnections: classTheme.connections
+      },
+      themeTitle: parsedData.missionTitle || classTheme.theme,
+      overview: parsedData.theme || classTheme.rationale,
+      weekOf: new Date().toISOString(),
+      createdAt: new Date().toISOString(),
+      days: days,
+      weekOverview: {
+        transitionStrategies: parsedData.transitionStrategies,
+        emergencyProtocols: parsedData.emergencyProtocols,
+        reflectionPrompts: parsedData.reflectionPrompts,
+        homeSchoolConnection: parsedData.homeSchoolConnection,
+        inclusionNotes: parsedData.inclusionNotes
+      },
+      
+      studentIds: request.students.map((s: any) => s.id),
+      generatedAt: new Date().toISOString()
+    };
 
     return {
       success: true,
-      plan: planData
+      plan
     };
-
   } catch (error) {
-    console.error('Error generating classroom plan:', error);
+    console.error('❌❌❌ ERROR GENERATING CLASSROOM PLAN ❌❌❌');
+    console.error('Error type:', error instanceof Error ? error.constructor.name : typeof error);
+    console.error('Error message:', error instanceof Error ? error.message : 'Unknown error');
+    console.error('Error details:', error);
+    console.error('Stack trace:', error instanceof Error ? error.stack : 'No stack trace');
     
     // Return structured fallback plan with theme integration
     const classTheme = generateClassTheme(request.students);
@@ -341,41 +408,39 @@ Return ONLY valid JSON in this exact structure:
         totalDuration: request.lessonDuration,
         classTheme: {
           title: classTheme.theme,
-          description: `A unifying theme that celebrates our classroom's diverse interests: ${classTheme.rationale}`,
+          description: classTheme.rationale,
           studentConnections: classTheme.connections
         },
-        learningObjectives: request.learningObjectives,
-        activities: [
+        themeTitle: classTheme.theme,
+        overview: classTheme.rationale,
+        weekOf: new Date().toISOString(),
+        createdAt: new Date().toISOString(),
+        days: [
           {
-            title: `${classTheme.theme} Introduction Circle`,
-            duration: 10,
-            type: 'whole-class' as const,
-            description: `Welcome students with a theme-based opening that connects to everyone's interests through ${classTheme.theme}`,
-            instructions: `1. Gather in circle\n2. Share theme introduction\n3. Connect each student's interests to the theme\n4. Set learning intentions`,
-            materials: ['Visual theme display', 'Student interest cards', 'Calm music'],
-            curriculumCodes: ['AC9E3LA03'],
-            themeConnections: {
-              overallConnection: `Introduces ${classTheme.theme} as our learning focus`,
-              studentInterestLinks: classTheme.connections
-            },
-            differentiationStrategies: {
-              visual: ['Theme visual display', 'Interest connection cards'],
-              auditory: ['Verbal explanations', 'Theme song or sounds'],
-              kinesthetic: ['Movement to circle', 'Fidget tools available'],
-              lowDemand: ['Choice in sharing level', 'No pressure to speak'],
-              highSupport: ['Visual schedule', 'Peer buddy system']
-            },
-            groupingStrategy: 'Whole class circle with flexible participation',
-            assessmentMethod: 'Observation of engagement and interest connections',
-            sensoryConsiderations: ['Soft lighting', 'Calm music', 'Fidget tools available'],
-            successCriteria: ['Shows interest in theme', 'Connects to personal interests', 'Feels included']
+            dayIndex: 0,
+            dayName: 'Monday',
+            dayFocus: `Introduction to ${classTheme.theme}`,
+            activities: [
+              {
+                title: 'Welcome Circle',
+                objective: 'Connect student interests to our class theme',
+                curriculumCodes: ['AC9E3LA03'],
+                materials: ['Visual theme display', 'Student interest cards', 'Calm music'],
+                instructions: '1. Gather students in a comfortable circle\n2. Introduce the theme with visual supports\n3. Connect each student\'s interests to the theme\n4. Set learning intentions together\n5. Practice theme-related vocabulary',
+                declarativeLanguage: `I notice everyone has different interests that connect to ${classTheme.theme} in unique ways`,
+                adultSupport: 'Have fidget tools available and allow flexible participation levels',
+                outdoorOption: ''
+              }
+            ]
           }
         ],
-        transitionStrategies: ['Visual timers', 'Theme-based transition songs', 'Movement breaks'],
-        emergencyStrategies: ['Calm corner available', 'Flexible expectations', 'Sensory break protocols'],
-        reflectionPrompts: [`How did ${classTheme.theme} connect to your interests today?`, 'What was your favorite part?'],
-        homeSchoolConnection: [`Explore ${classTheme.theme} at home`, 'Share family connections to the theme'],
-        inclusionNotes: ['Every student\'s interests are valued', 'Multiple ways to participate', 'Celebrates neurodiversity'],
+        weekOverview: {
+          transitionStrategies: ['Visual timers for activity changes', 'Theme-based transition songs', 'Movement breaks between activities'],
+          emergencyProtocols: ['Calm corner available for regulation', 'Flexible expectations based on individual needs', 'Sensory break protocols'],
+          reflectionPrompts: [`How did ${classTheme.theme} connect to your interests today?`, 'What was your favorite part of our learning?'],
+          homeSchoolConnection: [`Explore ${classTheme.theme} at home with family`, 'Share family connections to the theme'],
+          inclusionNotes: ['Every student\'s interests are valued and celebrated', 'Multiple ways to participate and show learning', 'Celebrates neurodiversity as natural human variation']
+        },
         generatedAt: new Date().toISOString()
       }
     };

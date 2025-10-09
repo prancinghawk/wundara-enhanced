@@ -207,7 +207,17 @@ CRITICAL REQUIREMENTS:
   });
 
   // Extract text output
-  const content = resp.content?.map((c: any) => (c.type === "text" ? c.text : "")).join("\n") ?? "";
+  let content = resp.content?.map((c: any) => (c.type === "text" ? c.text : "")).join("\n") ?? "";
+  
+  // Try to clean up common JSON issues
+  content = content.trim();
+  
+  // Remove markdown code blocks if present
+  if (content.startsWith('```json')) {
+    content = content.replace(/^```json\s*/, '').replace(/\s*```$/, '');
+  } else if (content.startsWith('```')) {
+    content = content.replace(/^```\s*/, '').replace(/\s*```$/, '');
+  }
   
   try {
     // Try to parse as JSON
@@ -219,8 +229,22 @@ CRITICAL REQUIREMENTS:
   } catch (error) {
     console.log('⚠️ Failed to parse AI response as JSON:', error);
     console.log('📄 Raw content length:', content.length);
-    console.log('🔍 Last 500 chars of AI response:');
-    console.log(content.slice(-500));
+    console.log('🔍 First 200 chars:', content.slice(0, 200));
+    console.log('🔍 Last 200 chars:', content.slice(-200));
+    
+    // Try to find JSON object boundaries and extract valid JSON
+    const jsonMatch = content.match(/\{[\s\S]*\}/);
+    if (jsonMatch) {
+      try {
+        const extractedJson = jsonMatch[0];
+        const planData = JSON.parse(extractedJson) as WeeklyPlanStructure;
+        console.log('✅ Successfully extracted and parsed JSON from response');
+        return { content: extractedJson, planData };
+      } catch (extractError) {
+        console.log('⚠️ Failed to parse extracted JSON:', extractError);
+      }
+    }
+    
     // Fallback to text content
     return { content, planData: null };
   }

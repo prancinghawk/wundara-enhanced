@@ -391,20 +391,20 @@ export function ChildProfileWizard({ onSave, onCancel, initialData, isEditing = 
         return (
           <div className="space-y-6">
             <div className="text-center mb-6">
-              <h2 className="text-title-large mb-2">Learning Preferences</h2>
+              <h2 className="text-title-large mb-2">Learning Goals</h2>
               <p className="text-body-medium text-on-surface-variant">
-                Help us understand how your child learns best (all optional)
+                Share any personal or learning goals for your child (all optional)
               </p>
             </div>
 
             <div>
-              <label className="text-label-large mb-2 block">Special Notes (Optional)</label>
+              <label className="text-label-large mb-2 block">Learning Goals (Optional)</label>
               <textarea
                 value={profile.specialNotes}
                 onChange={(e) => updateProfile('specialNotes', e.target.value)}
                 rows={4}
                 className="w-full rounded-lg border border-outline bg-surface px-4 py-3 text-body-large focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
-                placeholder="Any special considerations, learning preferences, or materials you have available..."
+                placeholder="Enter any personal or learning goals you have for your child..."
               />
             </div>
           </div>
@@ -455,7 +455,7 @@ export function ChildProfileWizard({ onSave, onCancel, initialData, isEditing = 
 
               {profile.specialNotes && (
                 <Card className="p-4">
-                  <h3 className="text-title-medium mb-2">Special Notes</h3>
+                  <h3 className="text-title-medium mb-2">Learning Goals</h3>
                   <p className="text-body-medium">{profile.specialNotes}</p>
                 </Card>
               )}
@@ -517,7 +517,7 @@ export function ChildProfileWizard({ onSave, onCancel, initialData, isEditing = 
               <div key={step.id} className="flex flex-col items-center">
                 <div className={`w-10 h-10 rounded-full flex items-center justify-center mb-2 ${
                   isActive 
-                    ? 'bg-primary text-on-primary' 
+                    ? 'bg-gradient-to-br from-purple-400 to-purple-600 text-white' 
                     : isCompleted 
                       ? 'bg-primary/20 text-primary' 
                       : 'bg-surface-container text-on-surface-variant'
