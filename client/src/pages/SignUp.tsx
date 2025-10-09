@@ -1,12 +1,9 @@
 import React, { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 
 export default function SignUp() {
-  const navigate = useNavigate();
-  
   useEffect(() => {
     // Redirect to Stack Auth's hosted sign-up page
-    window.location.href = '/handler/sign-up';
+    window.location.href = 'https://app.stack-auth.com/handler/sign-up?project_id=ddb5065b-a008-4f51-b576-0cbced7f83c2';
   }, []);
 
   return (
