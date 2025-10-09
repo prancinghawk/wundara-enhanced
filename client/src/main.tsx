@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom';
 import './index.css';
 import App from './App';
 import WundaraThemeProvider from './theme/ThemeProvider';
+import { AuthProvider } from './components/auth/AuthProvider';
 
 console.log('🚀 Main.tsx is executing');
 
@@ -14,11 +15,13 @@ if (rootElement) {
   try {
     ReactDOM.createRoot(rootElement).render(
       <React.StrictMode>
-        <WundaraThemeProvider>
-          <BrowserRouter>
-            <App />
-          </BrowserRouter>
-        </WundaraThemeProvider>
+        <AuthProvider>
+          <WundaraThemeProvider>
+            <BrowserRouter>
+              <App />
+            </BrowserRouter>
+          </WundaraThemeProvider>
+        </AuthProvider>
       </React.StrictMode>
     );
     console.log('✅ React app rendered successfully');
