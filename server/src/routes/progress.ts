@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../config/db";
-import { planProgress, learningPlans } from "./drizzle/schema";
+import { planProgress, learningPlans } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 

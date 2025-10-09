@@ -1,6 +1,6 @@
 import { Router } from "express";
 import { db } from "../config/db";
-import { children } from "./drizzle/schema";
+import { children } from "../drizzle/schema";
 import { eq } from "drizzle-orm";
 import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 
