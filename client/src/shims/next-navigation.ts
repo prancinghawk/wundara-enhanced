@@ -37,3 +37,8 @@ export enum RedirectType {
   push = 'push',
   replace = 'replace',
 }
+
+export function useServerInsertedHTML(callback: () => void) {
+  // No-op for client-side rendering
+  return null;
+}
