@@ -28,7 +28,13 @@ export default defineConfig(({ mode }) => {
         'next/link': path.resolve(__dirname, './src/shims/next-link.tsx'),
         'next/router': path.resolve(__dirname, './src/shims/next-router.ts'),
         'next/image': path.resolve(__dirname, './src/shims/next-image.tsx'),
+        'next/navigation': path.resolve(__dirname, './src/shims/next-navigation.ts'),
         'next/dist/build/output/log': path.resolve(__dirname, './src/shims/next-log.ts'),
+      },
+    },
+    build: {
+      rollupOptions: {
+        external: ['next/navigation'],
       },
     },
     server: {
