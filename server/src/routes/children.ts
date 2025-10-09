@@ -2,12 +2,12 @@ import { Router } from "express";
 import { db } from "../config/db";
 import { children } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
-import { requireAuth, AuthedRequest, getUserId } from "../middleware/auth";
+import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 
 export const childrenRouter = Router();
 
 // Create child profile
-childrenRouter.post("/", requireAuth, async (req: AuthedRequest, res) => {
+childrenRouter.post("/", hybridRequireAuth(), async (req: AuthedRequest, res: any) => {
   const userId = getUserId(req);
   const { firstName, ageYears, neurotype, interests, learningContext, state } = req.body ?? {};
   
@@ -31,7 +31,7 @@ childrenRouter.post("/", requireAuth, async (req: AuthedRequest, res) => {
 });
 
 // List children for user
-childrenRouter.get("/", requireAuth, async (req: AuthedRequest, res) => {
+childrenRouter.get("/", hybridRequireAuth(), async (req: AuthedRequest, res: any) => {
   const userId = getUserId(req);
   console.log('📋 Fetching children for user:', userId);
   const rows = await db.select().from(children).where(eq(children.userId, userId));
@@ -40,7 +40,7 @@ childrenRouter.get("/", requireAuth, async (req: AuthedRequest, res) => {
 });
 
 // Update child
-childrenRouter.put("/:id", requireAuth, async (req: AuthedRequest, res) => {
+childrenRouter.put("/:id", hybridRequireAuth(), async (req: AuthedRequest, res: any) => {
   const userId = getUserId(req);
   const id = req.params.id;
   const values = req.body ?? {};
@@ -54,7 +54,7 @@ childrenRouter.put("/:id", requireAuth, async (req: AuthedRequest, res) => {
 });
 
 // Delete child
-childrenRouter.delete("/:id", requireAuth, async (req: AuthedRequest, res) => {
+childrenRouter.delete("/:id", hybridRequireAuth(), async (req: AuthedRequest, res: any) => {
   const id = req.params.id;
   const deleted = await db.delete(children).where(eq(children.id, id)).returning();
   res.json(deleted[0] ?? null);

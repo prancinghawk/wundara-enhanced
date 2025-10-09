@@ -2,12 +2,12 @@ import { Router } from "express";
 import { db } from "../config/db";
 import { planProgress, learningPlans } from "../../drizzle/schema";
 import { eq } from "drizzle-orm";
-import { requireAuth, AuthedRequest, getUserId } from "../middleware/auth";
+import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 
 export const progressRouter = Router();
 
 // Record progress for a specific day
-progressRouter.post("/:planId/day/:dayIndex", requireAuth, async (req: AuthedRequest, res) => {
+progressRouter.post("/:planId/day/:dayIndex", hybridRequireAuth(), async (req: AuthedRequest, res: any) => {
   const userId = getUserId(req);
   const { planId, dayIndex } = req.params;
 
@@ -24,7 +24,7 @@ progressRouter.post("/:planId/day/:dayIndex", requireAuth, async (req: AuthedReq
 });
 
 // Get progress entries for a plan
-progressRouter.get("/:planId", requireAuth, async (req: AuthedRequest, res) => {
+progressRouter.get("/:planId", hybridRequireAuth(), async (req: AuthedRequest, res: any) => {
   const { planId } = req.params;
   const rows = await db.select().from(planProgress).where(eq(planProgress.planId, planId));
   res.json(rows);

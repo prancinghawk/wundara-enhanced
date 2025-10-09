@@ -2,13 +2,13 @@ import { Router } from "express";
 import { db } from "../config/db";
 import { children, learningPlans } from "../../drizzle/schema";
 import { eq, and } from "drizzle-orm";
-import { requireAuth, AuthedRequest, getUserId } from "../middleware/auth";
+import { hybridRequireAuth, AuthedRequest, getUserId } from "../middleware/hybrid-auth";
 import { generateWeeklyPlan } from "../services/ai";
 
 export const plansRouter = Router();
 
 // Generate a plan for a child
-plansRouter.post("/generate/:childId", requireAuth, async (req: AuthedRequest, res, next) => {
+plansRouter.post("/child/:childId", hybridRequireAuth(), async (req: AuthedRequest, res: any, next: any) => {
   try {
     const userId = getUserId(req);
     const { childId } = req.params;
@@ -53,7 +53,7 @@ plansRouter.post("/generate/:childId", requireAuth, async (req: AuthedRequest, r
 });
 
 // List plans for a child
-plansRouter.get("/child/:childId", requireAuth, async (req: AuthedRequest, res) => {
+plansRouter.get("/child/:childId", hybridRequireAuth(), async (req: AuthedRequest, res: any, next: any) => {
   const userId = getUserId(req);
   const { childId } = req.params;
   // Ensure child belongs to user
@@ -65,7 +65,7 @@ plansRouter.get("/child/:childId", requireAuth, async (req: AuthedRequest, res) 
 });
 
 // Get plan by id
-plansRouter.get("/:id", requireAuth, async (req: AuthedRequest, res) => {
+plansRouter.get("/:planId", hybridRequireAuth(), async (req: AuthedRequest, res: any, next: any) => {
   const { id } = req.params;
   const [plan] = await db.select().from(learningPlans).where(eq(learningPlans.id, id));
   if (!plan) return res.status(404).json({ error: "Not found" });
