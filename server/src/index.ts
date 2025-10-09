@@ -1,3 +1,4 @@
+// Wundara Server - Railway Deployment
 import express from "express";
 import cors from "cors";
 import { ClerkExpressRequireAuth } from "@clerk/clerk-sdk-node";
@@ -6,7 +7,6 @@ import { childrenRouter } from "./routes/children";
 import { plansRouter } from "./routes/plans";
 import { progressRouter } from "./routes/progress";
 import { mockChildrenRouter } from "./routes/mock-children";
-import { mockPlansRouter } from "./routes/mock-plans";
 import { devPlansRouter } from "./routes/dev-plans";
 import { educatorPlansRouter } from "./routes/educator-plans";
 import { debugApiConfiguration, getApiIntegrationStatus } from "./utils/debug-api";
