@@ -1,5 +1,5 @@
 // Shim for next/navigation in Vite/React app
-import { useNavigate, useLocation, useSearchParams } from 'react-router-dom';
+import { useNavigate, useLocation, useSearchParams as useRouterSearchParams } from 'react-router-dom';
 
 export function useRouter() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export function usePathname() {
 }
 
 export function useSearchParams() {
-  return useSearchParams();
+  return useRouterSearchParams();
 }
 
 export function redirect(url: string) {
